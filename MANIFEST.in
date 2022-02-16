@@ -1,0 +1,11 @@
+# Manifest file for Python distribution - only list files required for Python
+include beamnetresponse/src/beamformed_nr.c
+include beamnetresponse/src/beamformed_nr_CPU.h
+include beamnetresponse/__init__.py
+include beamnetresponse/beamnetresponse.py
+include beamnetresponse/lib/__init__.py
+include beamnetresponse/lib/*.so
+include LICENSE
+include Makefile
+include README.md
+include setup.py
