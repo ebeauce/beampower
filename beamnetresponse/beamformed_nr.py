@@ -108,13 +108,9 @@ def network_response(detection_traces, moveouts, weights_phases,
 
     Returns
     --------
-    nr: (n_samples,) numpy.ndarray, float
-        Composite network response, that is the largest network response
-        across the source grid at each time step.
-    source_index_nr: (n_samples,) numpy.ndarray, int
-        Source indexes associated with the composite network response.
-        These give the location of the most likely seismic source at
-        a given time.
+    nr: (n_samples, n_sources) numpy.ndarray, float
+        Full network response with the `n_sources` network responses
+        at each time step.
     """
 
     n_stations, n_channels, n_samples = detection_traces.shape
@@ -128,9 +124,7 @@ def network_response(detection_traces, moveouts, weights_phases,
     moveouts = np.int32(moveouts.flatten())
     weights_sources = np.float32(weights_sources.flatten())
 
-    nr = np.zeros(n_samples, dtype=np.float32)
-    source_index_nr = np.zeros(n_samples, dtype=np.int32)
-
+    nr = np.zeros((n_samples, n_sources), dtype=np.float32)
 
     if device.lower() == 'cpu':
         _libCPU.network_response(
@@ -141,8 +135,7 @@ def network_response(detection_traces, moveouts, weights_phases,
                 n_sources,
                 n_stations,
                 n_phases,
-                nr.ctypes.data_as(ct.POINTER(ct.c_float)),
-                source_index_nr.ctypes.data_as(ct.POINTER(ct.c_int)))
+                nr.ctypes.data_as(ct.POINTER(ct.c_float)))
     elif device.lower() == 'gpu':
         _libGPU.network_response(
                 detection_traces.ctypes.data_as(ct.POINTER(ct.c_float)),
@@ -152,8 +145,7 @@ def network_response(detection_traces, moveouts, weights_phases,
                 n_sources,
                 n_stations,
                 n_phases,
-                nr.ctypes.data_as(ct.POINTER(ct.c_float)),
-                source_index_nr.ctypes.data_as(ct.POINTER(ct.c_int)))
+                nr.ctypes.data_as(ct.POINTER(ct.c_float)))
     else:
         print('device should cpu or gpu')
         return
