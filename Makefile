@@ -1,5 +1,5 @@
 # DIRECTORIES
-maindir=BeamNetResponse
+maindir=beamnetresponse
 srcdir=$(maindir)/src
 libdir=$(maindir)/lib
 

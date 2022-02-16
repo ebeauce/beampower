@@ -7,7 +7,7 @@ Minimal setup file for the beamnetresponse library for Python packaging.
     (https://www.gnu.org/licenses/gpl-3.0.en.html)
 """
 
-from setuptools import setup, Extension
+from setuptools import setup, Extension, find_packages
 from setuptools.command.build_ext import build_ext as build_ext_original
 from subprocess import call
 
@@ -22,8 +22,8 @@ class BNRExtension(Extension):
 class BeamNetResponseBuild(build_ext_original):
     def run(self):
         # Build the Python libraries via Makefile
-        cpu_make = ['make', 'python_cpu']
-        gpu_make = ['make', 'python_gpu']
+        cpu_make = ['make', 'python_CPU']
+        gpu_make = ['make', 'python_GPU']
 
         gpu_built = False
         cpu_built = False
@@ -43,7 +43,7 @@ class BeamNetResponseBuild(build_ext_original):
 with open("README.md", "r", encoding="utf-8") as fh:
     long_description = fh.read()
 
-setuptools.setup(
+setup(
     name="beamnetresponse",
     version="0.0.1",
     author="Eric Beaucé, William B. Frank",
@@ -62,7 +62,7 @@ setuptools.setup(
     ],
     license="GPL",
     package_dir={"": "."},
-    packages=setuptools.find_packages(),
+    packages=find_packages(),
     include_package_data=True,
     zip_safe=False,
     install_requires=[
@@ -71,6 +71,6 @@ setuptools.setup(
     python_requires=">=2.7",
     cmdclass={
         'build_ext': BeamNetResponseBuild},
-    ext_modules=[FMFExtension('beamnetresponse.lib.beamformed_nr_CPU'),
-                 FMFExtension('beamnetresponse.lib.beamformed_nr_GPU')]
+    ext_modules=[BNRExtension('beamnetresponse.lib.beamformed_nr_CPU'),
+                 BNRExtension('beamnetresponse.lib.beamformed_nr_GPU')]
 )
