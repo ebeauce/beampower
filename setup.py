@@ -62,8 +62,7 @@ setup(
         "Operating System :: OS Independent",
     ],
     license="GPL",
-    package_dir={"": "."},
-    packages=find_packages(),
+    packages=['beamnetresponse'],
     include_package_data=True,
     zip_safe=False,
     install_requires=[
