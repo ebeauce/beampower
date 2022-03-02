@@ -7,6 +7,7 @@ Minimal setup file for the beamnetresponse library for Python packaging.
     (https://www.gnu.org/licenses/gpl-3.0.en.html)
 """
 
+from __future__ import print_function
 from setuptools import setup, Extension, find_packages
 from setuptools.command.build_ext import build_ext as build_ext_original
 from subprocess import call
@@ -61,8 +62,7 @@ setup(
         "Operating System :: OS Independent",
     ],
     license="GPL",
-    package_dir={"": "."},
-    packages=find_packages(),
+    packages=['beamnetresponse'],
     include_package_data=True,
     zip_safe=False,
     install_requires=[
