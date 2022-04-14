@@ -54,6 +54,7 @@ float _beam(float *detection_traces, int *moveouts, float *weights,
     int det_tr_offset; // position on input pointer
 
     for (int s=0; s<n_stations; s++){
+        if (weights[s] == 0) continue;
         // station loop
         for (int p=0; p<n_phases; p++){
             // phase loop
