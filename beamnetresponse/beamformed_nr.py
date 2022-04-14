@@ -233,7 +233,7 @@ def prestack_traces(detection_traces, weights_phases, device='cpu'):
     """Prestack the detection traces ahead of the beamforming.  
 
     Channel-wise stacking for each target seismic phase can be done
-    once and for all at the beginning of the compution.
+    once and for all at the beginning of the computation.
 
     Parameters
     -----------
