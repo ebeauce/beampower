@@ -39,14 +39,14 @@ void _find_minmax_moveouts(int* moveouts, float* weights, size_t n_sources,
     }
 }
 
-float _beam(float *detection_traces, int *moveouts, float *weights,
+float _beam(float* detection_traces, int* moveouts, float* weights,
             size_t n_samples, size_t n_stations, size_t n_phases) {
 
     /* Build a beam of the detection traces using the input moveouts.
      * This routine uses the detection traces prestacked for each phase. */
 
     float beam = 0.; // shifted and stacked traces
-    int det_tr_offset; // position on input pointer
+    size_t det_tr_offset; // position on input pointer
 
     for (size_t s=0; s<n_stations; s++){
         if (weights[s] == 0) continue;
@@ -62,9 +62,9 @@ float _beam(float *detection_traces, int *moveouts, float *weights,
 
 
 void prestack_detection_traces(
-        float *detection_traces, float *weights_phases,
+        float* detection_traces, float* weights_phases,
         size_t n_samples, size_t n_stations, size_t n_channels,
-        size_t n_phases, float *prestack_traces){
+        size_t n_phases, float* prestack_traces){
 
     /* The channel dimension can be reduced ahead of the beamforming
      * for each phase since, for a given phase, all channels of a same
@@ -100,9 +100,9 @@ void prestack_detection_traces(
 }
 
 
-void network_response(float *detection_traces, int *moveouts, float *weights,
+void network_response(float* detection_traces, int* moveouts, float* weights,
                       size_t n_samples, size_t n_sources, size_t n_stations,
-                      size_t n_phases, float *nr) {
+                      size_t n_phases, float* nr) {
 
     /* Compute the beamformed network response at each input theoretical source
      * characterized by their moveouts. The output is a vector with length
@@ -137,7 +137,9 @@ void network_response(float *detection_traces, int *moveouts, float *weights,
     for (size_t t=0; t<n_samples; t++){
         for (size_t i=0; i<n_sources; i++){
 
+            // check out-of-bound operations
             if (t + moveouts_minmax[2*i+1] > n_samples) continue;
+            if (t + moveouts_minmax[2*i+0] < 0) continue;
 
             mv_offset = i*n_stations*n_phases;
             weights_offset = i*n_stations;
@@ -198,7 +200,9 @@ void composite_network_response(
 
         for (size_t i=0; i<n_sources; i++){
 
+            // check out-of-bound operations
             if (t + moveouts_minmax[2*i+1] > n_samples) continue;
+            if (t + moveouts_minmax[2*i+0] < 0) continue;
 
             mv_offset = i*n_stations*n_phases;
             weights_offset = i*n_stations;
