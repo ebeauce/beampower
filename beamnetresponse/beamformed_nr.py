@@ -89,7 +89,7 @@ def network_response(detection_traces, moveouts, weights_phases,
 
     Parameters
     ------------
-    detection_traces: (n_stations, n_channels, n_stations) numpy.ndarray, float
+    detection_traces: (n_stations, n_channels, n_samples) numpy.ndarray, float
         Any characterization function computed from the continuous seismograms.
     moveouts: (n_sources, n_stations, n_phases) numpy.ndarray, int
         Moveouts, in samples, from each of the `n_sources` theoretical sources
