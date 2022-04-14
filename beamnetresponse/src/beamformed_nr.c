@@ -14,25 +14,20 @@ void _find_minmax_moveouts(int* moveouts, float* weights, size_t n_sources,
      * Even indexes correspond to minimum moveouts,
      * odd indexes correspond to maximum moveouts. */
 
-    int i; // source counter
-    int s; // station counter
-    int p; // phase counter
-
 #pragma omp parallel for\
-    private(i, s, p)\
     shared(moveouts, weights, moveouts_minmax)
-    for (i = 0; i < n_sources; i++){
-        int max_moveout = 0;
+    for (size_t i = 0; i < n_sources; i++){
+        int max_moveout = INT_MIN;
         int min_moveout = INT_MAX;
         int moveout;
-        int weight_offset;
-        int mv_offset;
+        size_t weight_offset;
+        size_t mv_offset;
 
-        for (s=0; s<n_stations; s++){
+        for (size_t s=0; s<n_stations; s++){
             weight_offset = i*n_stations + s;
             if (weights[weight_offset] == 0.) continue; // the station is not used
 
-            for (p=0; p<n_phases; p++){
+            for (size_t p=0; p<n_phases; p++){
                 mv_offset = i*n_stations*n_phases + s*n_phases + p;
                 moveout = moveouts[mv_offset];
                 if (moveout > max_moveout) max_moveout = moveout;
@@ -53,10 +48,10 @@ float _beam(float *detection_traces, int *moveouts, float *weights,
     float beam = 0.; // shifted and stacked traces
     int det_tr_offset; // position on input pointer
 
-    for (int s=0; s<n_stations; s++){
+    for (size_t s=0; s<n_stations; s++){
         if (weights[s] == 0) continue;
         // station loop
-        for (int p=0; p<n_phases; p++){
+        for (size_t p=0; p<n_phases; p++){
             // phase loop
             det_tr_offset = s*n_samples*n_phases + p + n_phases*moveouts[s*n_phases + p];
             beam += weights[s]*detection_traces[det_tr_offset];
@@ -82,16 +77,16 @@ void prestack_detection_traces(
 #pragma omp parallel for\
     private(prestack_offset, det_tr_offset, weight_offset)\
     shared(detection_traces, weights_phases, prestack_traces)
-    for (int s=0; s<n_stations; s++){
+    for (size_t s=0; s<n_stations; s++){
         // station loop
-        for (int t=0; t<n_samples; t++){
+        for (size_t t=0; t<n_samples; t++){
             // time loop
-            for (int p=0; p<n_phases; p++){
+            for (size_t p=0; p<n_phases; p++){
                 // phase loop
                 prestack_offset = s*n_samples*n_phases + t*n_phases + p;
                 // initialize stack
                 prestack_traces[prestack_offset] = 0.;
-                for (int c=0; c<n_channels; c++){
+                for (size_t c=0; c<n_channels; c++){
                     // channel loop
                     // stack detection traces along the channel axis
                     det_tr_offset = s*n_channels*n_samples + c*n_samples + t;
@@ -139,8 +134,8 @@ void network_response(float *detection_traces, int *moveouts, float *weights,
 #pragma omp parallel for\
     private(mv_offset, weights_offset, nr_offset)\
     shared(detection_traces, moveouts, nr)
-    for (int t=0; t<n_samples; t++){
-        for (int i=0; i<n_sources; i++){
+    for (size_t t=0; t<n_samples; t++){
+        for (size_t i=0; i<n_sources; i++){
 
             if (t + moveouts_minmax[2*i+1] > n_samples) continue;
 
@@ -197,11 +192,11 @@ void composite_network_response(
 #pragma omp parallel for\
     private(mv_offset, weights_offset, largest_nr, largest_nr_index, current_nr)\
     shared(detection_traces, moveouts, weights, nr, source_index_nr)
-    for (int t=0; t<n_samples; t++){
+    for (size_t t=0; t<n_samples; t++){
         largest_nr = 0.;
         largest_nr_index = 0;
 
-        for (int i=0; i<n_sources; i++){
+        for (size_t i=0; i<n_sources; i++){
 
             if (t + moveouts_minmax[2*i+1] > n_samples) continue;
 
