@@ -6,7 +6,7 @@ libdir=$(maindir)/lib
 CC=gcc
 NVCC=nvcc
 
-all: $(libdir)/beamformed_nr_CPU.so
+all: $(libdir)/beamformed_nr_CPU.so $(libdir)/beamformed_nr_GPU.so
 python_CPU: $(libdir)/beamformed_nr_CPU.so
 python_GPU: $(libdir)/beamformed_nr_GPU.so
 .SUFFIXES: .c .cu
