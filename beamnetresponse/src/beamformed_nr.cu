@@ -36,8 +36,8 @@ void __global__ _find_minmax_moveouts_ker(int* moveouts, float* weights,
 
     if (i >= n_sources) return; // skip threads that are out-of-bound
 
-    int min_moveouts = INT_MAX;
-    int max_moveouts = INT_MIN;
+    int min_moveout = INT_MAX;
+    int max_moveout = INT_MIN;
     int moveout;
     size_t weight_offset;
     size_t mv_offset;
@@ -62,14 +62,12 @@ void __global__ _beam(float *detection_traces, int *moveouts,
         int *moveouts_minmax, float *weights, size_t global_time_index,
         size_t n_samples, size_t n_stations, size_t n_phases, float *nr){
 
-    size_t t = threadIdx.x; // local time index
     size_t i = blockIdx.x; // source index
     size_t t_idx = threadIdx.x; // thread-private index
     float beam = 0.; // sum
     size_t det_tr_offset; // position on input pointer
     // number of elements to store in shared memory
     size_t size_moveouts = n_stations*n_phases;
-    size_t size_weights = n_stations;
     // declare shared arrays
     extern __shared__ int shared[];
     int *moveouts_s = &shared[0];
@@ -81,19 +79,20 @@ void __global__ _beam(float *detection_traces, int *moveouts,
         if (t_idx < n_stations){
             weights_s[t_idx] = weights[i*n_stations + t_idx];
         }
-        t_idx += blockDim.x
+        t_idx += blockDim.x;
     }
     // wait for all threads to be done with reading
     __syncthreads();
 
     // compute this beam only if it stays within time bounds
-    if ((global_time_index + moveouts_minmax[2*i + 0]) >= 0) |\
-        (global_time_index + threadIdx.x + moveouts_minmax[2*i + 1] < n_samples){
+    if ((global_time_index >= -moveouts_minmax[2*i + 0])
+            & ((global_time_index + threadIdx.x + moveouts_minmax[2*i + 1]) < n_samples)){
         // start shift and stack
-        for (size_t s=0; s<n_stations, s++){
+        for (size_t s=0; s<n_stations; s++){
             for (size_t p=0; p<n_phases; p++){
                 det_tr_offset = s*n_samples*n_phases + p\
-                                + n_phases*moveouts_s[s*n_phases + p];
+                                + n_phases*moveouts_s[s*n_phases + p]\
+                                + n_phases*threadIdx.x;
                 beam += weights_s[s]*detection_traces[det_tr_offset];
             }
         }
@@ -109,9 +108,9 @@ void __global__ _cnr(float *nr, size_t n_sources, float *cnr,
     int max_nr_index;
 
     // loop over all sources and search for the maximum
-    for (size_t i=0; i<n_sources, i++){
-        if (cnr[i*blockDim.x + threadIdx.x] > max_nr){
-            max_nr = cnr[i*blockDim.x + threadIdx.x];
+    for (int i=0; i<n_sources; i++){
+        if (nr[i*blockDim.x + threadIdx.x] > max_nr){
+            max_nr = nr[i*blockDim.x + threadIdx.x];
             max_nr_index = i;
         }
     }
@@ -133,26 +132,31 @@ void composite_network_response(float* detection_traces, int* moveouts, float* w
      * response in 4D (time and space) with applications for event detection
      * but also rupture progation imaging (back-projection). */
 
-    size_t mv_offset; // location on moveouts (use size_t to handle large numbers)
-    size_t weights_offset; // location on weights pointer
-    size_t nr_offset; // location on nr
-    int *moveouts_minmax; // vector with min and max mv of each source
+    //size_t mv_offset; // location on moveouts (use size_t to handle large numbers)
+    //size_t weights_offset; // location on weights pointer
+    //size_t nr_offset; // location on nr
+    //int *moveouts_minmax; // vector with min and max mv of each source
     int nGPUs=0;
-    cudaError_t cuda_result;
+    //cudaError_t cuda_result;
 
     // count the number of available GPUs
     cudaGetDeviceCount(&nGPUs);
-    omp_set_num_threads(min(nGPUs, n_samples));
+    omp_set_num_threads(nGPUs);
 
     // compute the number of sources processed by each GPU
-    n_sources_per_GPU = n_sources/nGPUs + 1;
+    size_t n_sources_per_GPU = n_sources/nGPUs + 1;
+
+    // compute the amount of shared memory requested by _beam
+    size_t shared_mem = n_stations*n_phases*sizeof(int)\
+                        + n_stations*sizeof(float);
 
     // compute the number of time steps given a single GPU block
     // covers BLOCKSIZE temporal samples
-    n_steps = n_samples/BLOCKSIZE + 1;
+    //size_t n_steps = n_samples/BLOCKSIZE + 1;
 
     // start a parallel section to distribute tasks across GPUs
-#pragma omp parallel shared(detection_traces, moveouts, weights, nr)
+#pragma omp parallel firstprivate(n_sources_per_GPU, nGPUs)\
+    shared(detection_traces, moveouts, weights, cnr)
     {
         // associate thread to a single GPU and get
         // GPU characteristics such as memory capacity
@@ -162,7 +166,7 @@ void composite_network_response(float* detection_traces, int* moveouts, float* w
         cudaGetDeviceProperties(&props, id);
 
         // Card-dependent settings: prefer L1 cache or shared memory
-        cudaDeviceSetCacheConfig(cudaFuncCachePreferShared);
+        //cudaDeviceSetCacheConfig(cudaFuncCachePreferShared);
         //cudaDeviceSetCacheConfig(cudaFuncCachePreferL1);
 
         // compute the start and end indexes of the grid sources
@@ -181,7 +185,10 @@ void composite_network_response(float* detection_traces, int* moveouts, float* w
         float *weights_d;
         float *nr_d;
         float *cnr_d;
-        float *source_index_cnr_d;
+        int *source_index_cnr_d;
+        // declare host pointers
+        float *cnr_thread;
+        int *source_index_cnr_thread;
 
         // size of arrays on device
         size_t sizeofdata = n_stations*n_samples*n_phases*sizeof(float);
@@ -201,7 +208,7 @@ void composite_network_response(float* detection_traces, int* moveouts, float* w
         cudaMalloc((void**)&source_index_cnr_d, sizeofcnr);
         // declare host pointers and allocate CPU memory
         cnr_thread = (float *)malloc(sizeofcnr);
-        source_index_cnr_thread = (float *)malloc(sizeofcnr);
+        source_index_cnr_thread = (int *)malloc(sizeofcnr);
 
         // transfer data from host (CPU) to device (GPU)
         cudaMemcpy(detection_traces_d, detection_traces, sizeofdata,
@@ -212,7 +219,7 @@ void composite_network_response(float* detection_traces, int* moveouts, float* w
                 cudaMemcpyHostToDevice);
 
         // compute moveouts min and max
-        _find_moveouts_minmax_ker<<<n_sources_per_GPU/BLOCKSIZE+1, BLOCKSIZE>>>(
+        _find_minmax_moveouts_ker<<<n_sources_per_GPU/BLOCKSIZE+1, BLOCKSIZE>>>(
                 moveouts_d, weights_d, n_sources_per_GPU, n_stations,
                 n_phases, moveouts_minmax_d);
 
@@ -221,7 +228,10 @@ void composite_network_response(float* detection_traces, int* moveouts, float* w
         cudaMemset(source_index_cnr_d, 0., sizeofcnr);
 
         // initialize GPU time index
-        size_t time_GPU = id*BLOCKSIZE;
+        size_t time_GPU = 0;
+
+
+        printf("GPU %d done with allocating and copying data.\n", id);
 
         // compute network response
         while (time_GPU < n_samples){
@@ -230,13 +240,14 @@ void composite_network_response(float* detection_traces, int* moveouts, float* w
 
             // backproject the wavefield onto n_sources_per_GPU
             // grid locations and at BLOCKSIZE time locations
-            _beam<<<n_sources_per_GPU/BLOCKSIZE+1, BLOCKSIZE>>>(
-                    detection_traces_d + time_GPU, moveouts_d,
-                    moveouts_minmax_d, weights_d, time_GPU, n_samples,
-                    n_stations, n_phases, nr_d);
+            _beam<<<n_sources_per_GPU,
+                    BLOCKSIZE, shared_mem>>>(
+                            detection_traces_d + n_phases*time_GPU, moveouts_d,
+                            moveouts_minmax_d, weights_d, time_GPU, n_samples,
+                            n_stations, n_phases, nr_d);
 
             // wait for all kernels to be executed before searching for the max
-            cudaDeviceSynchronize();
+            //cudaDeviceSynchronize();
 
             // find the maximum cnr and cnr source index across the
             // n_sources_per_GPU grid locations and at the BLOCKSIZE time
@@ -260,16 +271,26 @@ void composite_network_response(float* detection_traces, int* moveouts, float* w
         // critical section to merge all the single-GPU cnr into one
 #pragma omp critical
         {
+            printf("GPU %d start filing cnr...\n", id);
             for (size_t t=0; t<n_samples; t++){
                 if (cnr_thread[t] > cnr[t]){
                     cnr[t] = cnr_thread[t];
-                    source_index_cnr[t] = source_index_cnr_thread[t];
+                    source_index_cnr[t] = src_idx_start+source_index_cnr_thread[t];
                 }
             }
+            printf("GPU %d is done!\n", id);
         }
+
+        cudaDeviceSynchronize();
 
         // done!
 
     } // omp parallel
+}
+
+void network_response(float* detection_traces, int* moveouts, float* weights,
+        size_t n_samples, size_t n_sources, size_t n_stations, size_t n_phases,
+        float* nr){
+}
 
 } // extern C

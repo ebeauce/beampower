@@ -53,7 +53,8 @@ float _beam(float* detection_traces, int* moveouts, float* weights,
         // station loop
         for (size_t p=0; p<n_phases; p++){
             // phase loop
-            det_tr_offset = s*n_samples*n_phases + p + n_phases*moveouts[s*n_phases + p];
+            det_tr_offset = s*n_samples*n_phases + p\
+                            + n_phases*moveouts[s*n_phases + p];
             beam += weights[s]*detection_traces[det_tr_offset];
         }
     }
@@ -138,8 +139,8 @@ void network_response(float* detection_traces, int* moveouts, float* weights,
         for (size_t i=0; i<n_sources; i++){
 
             // check out-of-bound operations
-            if (t + moveouts_minmax[2*i+1] > n_samples) continue;
-            if (t + moveouts_minmax[2*i+0] < 0) continue;
+            if ((t + moveouts_minmax[2*i+1]) > n_samples) continue;
+            if ((t + moveouts_minmax[2*i+0]) < 0) continue;
 
             mv_offset = i*n_stations*n_phases;
             weights_offset = i*n_stations;

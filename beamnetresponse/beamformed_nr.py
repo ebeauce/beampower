@@ -64,14 +64,14 @@ try:
             ct.c_size_t,              # n_phases
             ct.POINTER(ct.c_float),   # nr
             ct.POINTER(ct.c_int)]     # source_index_nr
-    _libGPU.prestack_detection_traces.argtypes = [
-            ct.POINTER(ct.c_float),   # detection_traces
-            ct.POINTER(ct.c_float),   # weights_phases
-            ct.c_size_t,              # n_sources
-            ct.c_size_t,              # n_stations
-            ct.c_size_t,              # n_channels
-            ct.c_size_t,              # n_phases
-            ct.POINTER(ct.c_float)]   # prestacked_traces
+    #_libGPU.prestack_detection_traces.argtypes = [
+    #        ct.POINTER(ct.c_float),   # detection_traces
+    #        ct.POINTER(ct.c_float),   # weights_phases
+    #        ct.c_size_t,              # n_sources
+    #        ct.c_size_t,              # n_stations
+    #        ct.c_size_t,              # n_channels
+    #        ct.c_size_t,              # n_phases
+    #        ct.POINTER(ct.c_float)]   # prestacked_traces
     GPU_LOADED = True
 except OSError:
     print('beamnetresponse GPU library is not compiled!'
@@ -193,7 +193,7 @@ def composite_network_response(detection_traces, moveouts, weights_phases,
 
     # prestack detection traces
     detection_traces = prestack_traces(
-            detection_traces, weights_phases, device=device)
+            detection_traces, weights_phases, device='cpu')
 
     detection_traces = np.float32(detection_traces.flatten())
     moveouts = np.int32(moveouts.flatten())
@@ -271,13 +271,13 @@ def prestack_traces(detection_traces, weights_phases, device='cpu'):
                 n_channels,
                 n_phases,
                 prestacked_traces.ctypes.data_as(ct.POINTER(ct.c_float)))
-    if device.lower() == 'gpu':
-        _libGPU.prestack_detection_traces(
-                detection_traces.ctypes.data_as(ct.POINTER(ct.c_float)),
-                weights_phases.ctypes.data_as(ct.POINTER(ct.c_float)),
-                n_samples,
-                n_stations,
-                n_channels,
-                n_phases,
-                prestacked_traces.ctypes.data_as(ct.POINTER(ct.c_float)))
+    #if device.lower() == 'gpu':
+    #    _libGPU.prestack_detection_traces(
+    #            detection_traces.ctypes.data_as(ct.POINTER(ct.c_float)),
+    #            weights_phases.ctypes.data_as(ct.POINTER(ct.c_float)),
+    #            n_samples,
+    #            n_stations,
+    #            n_channels,
+    #            n_phases,
+    #            prestacked_traces.ctypes.data_as(ct.POINTER(ct.c_float)))
     return prestacked_traces.reshape((n_stations, n_samples, n_phases))
