@@ -1,7 +1,7 @@
 # beamnetresponse
 
 Package for beamforming or backprojection of seismic data. The Python wrapper
-can call the C (CPU) or CUDA-C (GPU, work-in-progress, coming soon!) implementation.
+can call the C (CPU) or CUDA-C (GPU) implementation.
 
 ## Reference
 
@@ -35,7 +35,7 @@ in the following order:
 - 5_show_results.ipynb: A notebook to visualize the detection results.
 
 This tutorial requires many more packages than the beamnetresponse package itself.
-First, create a new environment running python 3.8. Then, install the following packages:
+First, create a new environment running python 3.10. Then, install the following packages:
 - pyasdf [https://seismicdata.github.io/pyasdf/installation.html](https://seismicdata.github.io/pyasdf/installation.html)
 - pykonal [https://github.com/malcolmw/pykonal](https://github.com/malcolmw/pykonal)
 - obspy
