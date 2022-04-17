@@ -116,15 +116,10 @@ void network_response(float* detection_traces, int* moveouts, float* weights,
     size_t weights_offset; // location on weights pointer
     size_t nr_offset; // location on nr
     int *moveouts_minmax; // vector with min and max mv of each source
-    //float *prestacked_det_traces; // // detection traces after reducing channel axis
+    int mv_min, mv_max;
 
     // search for min and max moveout of each source
     moveouts_minmax = (int *)malloc(2*n_sources*sizeof(int));
-
-    //// prestack detection traces along channel axis
-    //prestacked_det_traces = (float *)malloc(n_stations*n_samples*n_phases*sizeof(float));
-    //_prestack_detection_traces(detection_traces, weights, n_samples, n_stations,
-    //                           n_channels, n_phases, prestacked_det_traces);
    
     _find_minmax_moveouts(moveouts,
                           weights,
@@ -135,24 +130,24 @@ void network_response(float* detection_traces, int* moveouts, float* weights,
 #pragma omp parallel for\
     private(mv_offset, weights_offset, nr_offset)\
     shared(detection_traces, moveouts, nr)
-    for (size_t t=0; t<n_samples; t++){
-        for (size_t i=0; i<n_sources; i++){
-
+    for (size_t i=0; i<n_sources; i++){
+        mv_offset = i*n_stations*n_phases;
+        weights_offset = i*n_stations;
+        nr_offset = i*n_samples;
+        mv_min = moveouts_minmax[2*i+0];
+        mv_max = moveouts_minmax[2*i+1];
+        for (size_t t=0; t<n_samples; t++){
             // check out-of-bound operations
-            if ((t + moveouts_minmax[2*i+1]) > n_samples) continue;
-            if ((t + moveouts_minmax[2*i+0]) < 0) continue;
-
-            mv_offset = i*n_stations*n_phases;
-            weights_offset = i*n_stations;
-            nr_offset = t*n_sources + i;
+            if ((t + mv_max) > n_samples) continue;
+            if ((t + mv_min) < 0) continue;
 
             // compute the beamformed network responses for all sources
-            nr[nr_offset] = _beam(detection_traces + n_phases*t,
-                                  moveouts + mv_offset,
-                                  weights + weights_offset,
-                                  n_samples,
-                                  n_stations,
-                                  n_phases);
+            nr[nr_offset + t] = _beam(detection_traces + n_phases*t,
+                                      moveouts + mv_offset,
+                                      weights + weights_offset,
+                                      n_samples,
+                                      n_stations,
+                                      n_phases);
         }
     }
 }
@@ -176,15 +171,9 @@ void composite_network_response(
     float current_nr = 0.; // value of currently computed nr
     float largest_nr = 0.; // current largest visited nr
     int largest_nr_index = 0; // source index of current largest visited nr
-    //float *prestacked_det_traces; // detection traces after reducing channel axis
 
     // search for min and max moveout of each source
     moveouts_minmax = (int *)malloc(2*n_sources*sizeof(int));
-
-    //// prestack detection traces along channel axis
-    //prestacked_det_traces = (float *)malloc(n_stations*n_samples*n_phases*sizeof(float));
-    //_prestack_detection_traces(detection_traces, weights, n_samples, n_stations,
-    //                           n_channels, n_phases, prestacked_det_traces);
     
     _find_minmax_moveouts(moveouts,
                           weights,

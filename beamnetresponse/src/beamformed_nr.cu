@@ -8,7 +8,8 @@
 #define gpuErrchk(ans) { gpuAssert((ans), __FILE__, __LINE__); }
 
 #define BLOCKSIZE 512
-#define WARPSIZE 32
+#define KILOBYTE 1024
+#define MEGABYTE 1024*1024 
 
 extern "C"{
 #include "beamformed_nr_GPU.h"
@@ -60,7 +61,8 @@ void __global__ _find_minmax_moveouts_ker(int* moveouts, float* weights,
 
 void __global__ _beam(float *detection_traces, int *moveouts,
         int *moveouts_minmax, float *weights, size_t global_time_index,
-        size_t n_samples, size_t n_stations, size_t n_phases, float *nr){
+        size_t n_samples, size_t n_stations, size_t n_phases, 
+        size_t dim0_nr, float *nr){
 
     size_t i = blockIdx.x; // source index
     size_t t_idx = threadIdx.x; // thread-private index
@@ -97,7 +99,7 @@ void __global__ _beam(float *detection_traces, int *moveouts,
             }
         }
         // update nr
-        nr[i*blockDim.x + threadIdx.x] = beam;
+        nr[i*dim0_nr + threadIdx.x] = beam;
     }
 }
 
@@ -132,10 +134,6 @@ void composite_network_response(float* detection_traces, int* moveouts, float* w
      * response in 4D (time and space) with applications for event detection
      * but also rupture progation imaging (back-projection). */
 
-    //size_t mv_offset; // location on moveouts (use size_t to handle large numbers)
-    //size_t weights_offset; // location on weights pointer
-    //size_t nr_offset; // location on nr
-    //int *moveouts_minmax; // vector with min and max mv of each source
     int nGPUs=0;
     //cudaError_t cuda_result;
 
@@ -150,10 +148,6 @@ void composite_network_response(float* detection_traces, int* moveouts, float* w
     size_t shared_mem = n_stations*n_phases*sizeof(int)\
                         + n_stations*sizeof(float);
 
-    // compute the number of time steps given a single GPU block
-    // covers BLOCKSIZE temporal samples
-    //size_t n_steps = n_samples/BLOCKSIZE + 1;
-
     // start a parallel section to distribute tasks across GPUs
 #pragma omp parallel firstprivate(n_sources_per_GPU, nGPUs)\
     shared(detection_traces, moveouts, weights, cnr)
@@ -166,8 +160,20 @@ void composite_network_response(float* detection_traces, int* moveouts, float* w
         cudaGetDeviceProperties(&props, id);
 
         // Card-dependent settings: prefer L1 cache or shared memory
-        //cudaDeviceSetCacheConfig(cudaFuncCachePreferShared);
+        cudaDeviceSetCacheConfig(cudaFuncCachePreferShared);
         //cudaDeviceSetCacheConfig(cudaFuncCachePreferL1);
+
+        // Check that the amount of shared memory is achievable
+        size_t max_shared_mem = props.sharedMemPerBlock;
+        if (shared_mem > max_shared_mem){
+            printf("Too much shared memory requested on GPU %d"\
+                   " (%zu kb requested vs %zu kb available)."\
+                   "Consider reducing the number of stations processed "\
+                   "at once.\n", id, shared_mem/KILOBYTE,
+                   max_shared_mem/KILOBYTE);
+            exit(0);
+        }
+
 
         // compute the start and end indexes of the grid sources
         // processed by the GPU
@@ -197,6 +203,20 @@ void composite_network_response(float* detection_traces, int* moveouts, float* w
         size_t sizeofweights = n_sources_per_GPU*n_stations*sizeof(float);
         size_t sizeofnr = BLOCKSIZE*n_sources_per_GPU*sizeof(float);
         size_t sizeofcnr = n_samples*sizeof(float);
+        size_t sizeoftotal = sizeofdata + sizeofmoveouts + sizeofmoveouts_minmax\
+                             + sizeofweights + sizeofnr + 2*sizeofcnr;
+
+        size_t freeMem = 0;
+        size_t totalMem = 0;
+        cudaMemGetInfo(&freeMem, &totalMem);
+        if (sizeoftotal > freeMem) {
+            printf("%zu Mb are requested on GPU #%i whereas it has only %zu free Mb.\n",
+                   sizeoftotal/MEGABYTE, id, freeMem/MEGABYTE);
+            printf("Consider reducing the duration of the seismograms processed"\
+                   " at once, or downsample the source grid.\n");
+            exit(0);
+        }
+
 
         // allocate GPU memory
         cudaMalloc((void**)&detection_traces_d, sizeofdata);
@@ -230,9 +250,6 @@ void composite_network_response(float* detection_traces, int* moveouts, float* w
         // initialize GPU time index
         size_t time_GPU = 0;
 
-
-        printf("GPU %d done with allocating and copying data.\n", id);
-
         // compute network response
         while (time_GPU < n_samples){
             // initialize nr_d to zeros
@@ -244,10 +261,7 @@ void composite_network_response(float* detection_traces, int* moveouts, float* w
                     BLOCKSIZE, shared_mem>>>(
                             detection_traces_d + n_phases*time_GPU, moveouts_d,
                             moveouts_minmax_d, weights_d, time_GPU, n_samples,
-                            n_stations, n_phases, nr_d);
-
-            // wait for all kernels to be executed before searching for the max
-            //cudaDeviceSynchronize();
+                            n_stations, n_phases, BLOCKSIZE, nr_d);
 
             // find the maximum cnr and cnr source index across the
             // n_sources_per_GPU grid locations and at the BLOCKSIZE time
@@ -268,29 +282,182 @@ void composite_network_response(float* detection_traces, int* moveouts, float* w
         // wait for all GPUs to finish processing their part of the grid
         cudaDeviceSynchronize();
 
+        // return an error if something happened in the kernel
+        gpuErrchk(cudaPeekAtLastError());
+        gpuErrchk(cudaDeviceSynchronize());
+
         // critical section to merge all the single-GPU cnr into one
+        for (size_t t=0; t<n_samples; t++){
 #pragma omp critical
-        {
-            printf("GPU %d start filing cnr...\n", id);
-            for (size_t t=0; t<n_samples; t++){
+            {
                 if (cnr_thread[t] > cnr[t]){
                     cnr[t] = cnr_thread[t];
                     source_index_cnr[t] = src_idx_start+source_index_cnr_thread[t];
                 }
             }
-            printf("GPU %d is done!\n", id);
         }
 
-        cudaDeviceSynchronize();
+        // free memory
+        cudaFree(detection_traces_d);
+        cudaFree(moveouts_d);
+        cudaFree(moveouts_minmax_d);
+        cudaFree(weights_d);
+        cudaFree(cnr_d);
+        cudaFree(source_index_cnr_d);
 
         // done!
 
     } // omp parallel
+
 }
 
 void network_response(float* detection_traces, int* moveouts, float* weights,
         size_t n_samples, size_t n_sources, size_t n_stations, size_t n_phases,
         float* nr){
+
+    int nGPUs=0;
+    //cudaError_t cuda_result;
+
+    // count the number of available GPUs
+    cudaGetDeviceCount(&nGPUs);
+    omp_set_num_threads(nGPUs);
+
+    // compute the number of sources processed by each GPU
+    size_t n_sources_per_GPU = n_sources/nGPUs + 1;
+
+    // compute the amount of shared memory requested by _beam
+    size_t shared_mem = n_stations*n_phases*sizeof(int)\
+                        + n_stations*sizeof(float);
+
+    // start a parallel section to distribute tasks across GPUs
+#pragma omp parallel firstprivate(n_sources_per_GPU, nGPUs)\
+    shared(detection_traces, moveouts, weights, nr)
+    {
+        // associate thread to a single GPU and get
+        // GPU characteristics such as memory capacity
+        int id = omp_get_thread_num();
+        cudaSetDevice(id);
+        cudaDeviceProp props;
+        cudaGetDeviceProperties(&props, id);
+
+        // Card-dependent settings: prefer L1 cache or shared memory
+        cudaDeviceSetCacheConfig(cudaFuncCachePreferShared);
+        //cudaDeviceSetCacheConfig(cudaFuncCachePreferL1);
+
+        // Check that the amount of shared memory is achievable
+        size_t max_shared_mem = props.sharedMemPerBlock;
+        if (shared_mem > max_shared_mem){
+            printf("Too much shared memory requested on GPU %d"\
+                   " (%zu kb requested vs %zu kb available)."\
+                   "Consider reducing the number of stations processed "\
+                   "at once.\n", id, shared_mem/KILOBYTE,
+                   max_shared_mem/KILOBYTE);
+            exit(0);
+        }
+
+
+        // compute the start and end indexes of the grid sources
+        // processed by the GPU
+        size_t src_idx_start = id*n_sources_per_GPU;
+        size_t src_idx_end = (id+1)*n_sources_per_GPU;
+        if (src_idx_end > n_sources){
+            src_idx_end = n_sources;
+            n_sources_per_GPU = src_idx_end - src_idx_start;
+        }
+
+        // declare device pointers
+        float *detection_traces_d;
+        int *moveouts_d;
+        int *moveouts_minmax_d;
+        float *weights_d;
+        float *nr_d;
+
+        // size of arrays on device
+        size_t sizeofdata = n_stations*n_samples*n_phases*sizeof(float);
+        size_t sizeofmoveouts = n_sources_per_GPU*n_stations*n_phases*sizeof(int);
+        size_t sizeofmoveouts_minmax = 2*n_sources_per_GPU*sizeof(int);
+        size_t sizeofweights = n_sources_per_GPU*n_stations*sizeof(float);
+        size_t sizeofnr = n_sources_per_GPU*n_samples*sizeof(float);
+        size_t sizeoftotal = sizeofdata + sizeofmoveouts + sizeofmoveouts_minmax\
+                             + sizeofweights + sizeofnr;
+
+        size_t freeMem = 0;
+        size_t totalMem = 0;
+        cudaMemGetInfo(&freeMem, &totalMem);
+        if (sizeoftotal > freeMem) {
+            printf("%zu Mb are requested on GPU #%i whereas it has only %zu free Mb.\n",
+                   sizeoftotal/MEGABYTE, id, freeMem/MEGABYTE);
+            printf("Consider reducing the duration of the seismograms processed"\
+                   " at once, or downsample the source grid.\n");
+            exit(0);
+        }
+
+
+        // allocate GPU memory
+        cudaMalloc((void**)&detection_traces_d, sizeofdata);
+        cudaMalloc((void**)&moveouts_d, sizeofmoveouts);
+        cudaMalloc((void**)&moveouts_minmax_d, sizeofmoveouts_minmax);
+        cudaMalloc((void**)&weights_d, sizeofweights);
+        cudaMalloc((void**)&nr_d, sizeofnr);
+
+        // transfer data from host (CPU) to device (GPU)
+        cudaMemcpy(detection_traces_d, detection_traces, sizeofdata,
+                cudaMemcpyHostToDevice);
+        cudaMemcpy(moveouts_d, moveouts + src_idx_start*n_stations*n_phases,
+                sizeofmoveouts, cudaMemcpyHostToDevice);
+        cudaMemcpy(weights_d, weights + src_idx_start*n_stations, sizeofweights,
+                cudaMemcpyHostToDevice);
+
+        // compute moveouts min and max
+        _find_minmax_moveouts_ker<<<n_sources_per_GPU/BLOCKSIZE+1, BLOCKSIZE>>>(
+                moveouts_d, weights_d, n_sources_per_GPU, n_stations,
+                n_phases, moveouts_minmax_d);
+
+        // initialize nr_d to zeros
+        cudaMemset(nr_d, 0., sizeofnr);
+
+
+        // initialize GPU time index
+        size_t time_GPU = 0;
+
+        //printf("GPU %d done with allocating and copying data.\n", id);
+
+        // compute network response
+        while (time_GPU < n_samples){
+
+            // backproject the wavefield onto n_sources_per_GPU
+            // grid locations and at BLOCKSIZE time locations
+            _beam<<<n_sources_per_GPU,
+                    BLOCKSIZE, shared_mem>>>(
+                            detection_traces_d + n_phases*time_GPU, moveouts_d,
+                            moveouts_minmax_d, weights_d, time_GPU, n_samples,
+                            n_stations, n_phases, n_samples, nr_d + time_GPU);
+
+            // increment time
+            time_GPU += BLOCKSIZE;
+        }
+
+        // get results back to the host
+        cudaMemcpy(nr + src_idx_start*n_samples, nr_d, sizeofnr,
+                cudaMemcpyDeviceToHost);
+
+        // free memory
+        cudaFree(detection_traces_d);
+        cudaFree(moveouts_d);
+        cudaFree(moveouts_minmax_d);
+        cudaFree(weights_d);
+        cudaFree(nr_d);
+
+        // return an error if something happened in the kernel
+        gpuErrchk(cudaPeekAtLastError());
+        gpuErrchk(cudaDeviceSynchronize());
+
+
+        // done!
+
+    } // omp parallel
+
+
 }
 
 } // extern C

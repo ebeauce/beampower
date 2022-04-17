@@ -108,7 +108,7 @@ def network_response(detection_traces, moveouts, weights_phases,
 
     Returns
     --------
-    nr: (n_samples, n_sources) numpy.ndarray, float
+    nr: (n_sources, n_samples) numpy.ndarray, float
         Full network response with the `n_sources` network responses
         at each time step.
     """
@@ -118,13 +118,13 @@ def network_response(detection_traces, moveouts, weights_phases,
 
     # prestack detection traces
     detection_traces = prestack_traces(
-            detection_traces, weights_phases, device=device)
+            detection_traces, weights_phases, device='cpu')
 
     detection_traces = np.float32(detection_traces.flatten())
     moveouts = np.int32(moveouts.flatten())
     weights_sources = np.float32(weights_sources.flatten())
 
-    nr = np.zeros((n_samples, n_sources), dtype=np.float32)
+    nr = np.zeros(n_sources*n_samples, dtype=np.float32)
 
     if device.lower() == 'cpu':
         _libCPU.network_response(
@@ -149,7 +149,7 @@ def network_response(detection_traces, moveouts, weights_phases,
     else:
         print('device should cpu or gpu')
         return
-    return nr.reshape(n_samples, n_sources)
+    return nr.reshape(n_sources, n_samples)
 
 def composite_network_response(detection_traces, moveouts, weights_phases,
                                weights_sources, device='cpu'):
