@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>API &mdash; beamnetresponse 0.0.1 documentation</title>
+      <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/doctools.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Tutorial" href="../tutorial.html" />
+    <link rel="prev" title="Example" href="example.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../index.html" class="icon icon-home"> beamnetresponse
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../introduction.html">Introduction</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../usage.html">Usage</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="example.html">Example</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">API</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../tutorial.html">Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../updates.html">Updates</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">beamnetresponse</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="../usage.html">Usage</a> &raquo;</li>
+      <li>API</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/usage/api.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <div class="section" id="module-beamnetresponse.beamformed_nr">
+<span id="api"></span><h1>API<a class="headerlink" href="#module-beamnetresponse.beamformed_nr" title="Permalink to this headline"></a></h1>
+<dl class="py function">
+<dt class="sig sig-object py" id="beamnetresponse.beamformed_nr.composite_network_response">
+<span class="sig-prename descclassname"><span class="pre">beamnetresponse.beamformed_nr.</span></span><span class="sig-name descname"><span class="pre">composite_network_response</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">detection_traces</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">moveouts</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">weights_phases</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">weights_sources</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">device</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'cpu'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#beamnetresponse.beamformed_nr.composite_network_response" title="Permalink to this definition"></a></dt>
+<dd><p>Compute the composite beamformed network response.</p>
+<p>This routine only keeps the highest network response and its associated
+source index across the grid at every time step. This memory efficient
+beamforming is well suited for continuous detection of seismic events.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>detection_traces</strong> (<em>(</em><em>n_stations</em><em>, </em><em>n_channels</em><em>, </em><em>n_stations</em><em>) </em><em>numpy.ndarray</em><em>, </em><em>float</em>) – Any characterization function computed from the continuous seismograms.</p></li>
+<li><p><strong>moveouts</strong> (<em>(</em><em>n_sources</em><em>, </em><em>n_stations</em><em>, </em><em>n_phases</em><em>) </em><em>numpy.ndarray</em><em>, </em><em>int</em>) – Moveouts, in samples, from each of the <cite>n_sources</cite> theoretical sources
+to each of the <cite>n_stations</cite> seismic stations and for the <cite>n_phases</cite>
+back-projected seismic phases.</p></li>
+<li><p><strong>weights_phases</strong> (<em>(</em><em>n_stations</em><em>, </em><em>n_channels</em><em>, </em><em>n_phases</em><em>) </em><em>numpy.ndarray</em><em>, </em><em>float</em>) – Weight given to each station and channel for a given phase. For
+example, horizontal components might be given a small or zero
+weight for the P-wave stacking.</p></li>
+<li><p><strong>weights_sources</strong> (<em>(</em><em>n_sources</em><em>, </em><em>n_stations</em><em>) </em><em>numpy.ndarray</em><em>, </em><em>float</em>) – Source-receiver-specific weights. For example, based on the
+source-receiver distance.</p></li>
+<li><p><strong>device</strong> (<em>string</em><em>, </em><em>default to 'cpu'</em>) – Either ‘cpu’ or ‘gpu’, depending on the available hardware and
+user’s preferences.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p><strong>nr</strong> (<em>(n_samples,) numpy.ndarray, float</em>) – Composite network response, that is the largest network response
+across the source grid at each time step.</p></li>
+<li><p><strong>source_index_nr</strong> (<em>(n_samples,) numpy.ndarray, int</em>) – Source indexes associated with the composite network response.
+These give the location of the most likely seismic source at
+a given time.</p></li>
+</ul>
+</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="beamnetresponse.beamformed_nr.network_response">
+<span class="sig-prename descclassname"><span class="pre">beamnetresponse.beamformed_nr.</span></span><span class="sig-name descname"><span class="pre">network_response</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">detection_traces</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">moveouts</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">weights_phases</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">weights_sources</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">device</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'cpu'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#beamnetresponse.beamformed_nr.network_response" title="Permalink to this definition"></a></dt>
+<dd><p>Compute the beamformed network response.</p>
+<p>This routine computes and returns the whole network response over the
+entire duration of <cite>detection_traces</cite>. Thus, if the input source grid
+is large, the output might be considerably memory-consuming. Therefore,
+this routine is more appropriate for small scale studies such as the
+rupture imaging of an earthquake.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>detection_traces</strong> (<em>(</em><em>n_stations</em><em>, </em><em>n_channels</em><em>, </em><em>n_stations</em><em>) </em><em>numpy.ndarray</em><em>, </em><em>float</em>) – Any characterization function computed from the continuous seismograms.</p></li>
+<li><p><strong>moveouts</strong> (<em>(</em><em>n_sources</em><em>, </em><em>n_stations</em><em>, </em><em>n_phases</em><em>) </em><em>numpy.ndarray</em><em>, </em><em>int</em>) – Moveouts, in samples, from each of the <cite>n_sources</cite> theoretical sources
+to each of the <cite>n_stations</cite> seismic stations and for the <cite>n_phases</cite>
+back-projected seismic phases.</p></li>
+<li><p><strong>weights_phases</strong> (<em>(</em><em>n_stations</em><em>, </em><em>n_channels</em><em>, </em><em>n_phases</em><em>) </em><em>numpy.ndarray</em><em>, </em><em>float</em>) – Weight given to each station and channel for a given phase. For
+example, horizontal components might be given a small or zero
+weight for the P-wave stacking.</p></li>
+<li><p><strong>weights_sources</strong> (<em>(</em><em>n_sources</em><em>, </em><em>n_stations</em><em>) </em><em>numpy.ndarray</em><em>, </em><em>float</em>) – Source-receiver-specific weights. For example, based on the
+source-receiver distance.</p></li>
+<li><p><strong>device</strong> (<em>string</em><em>, </em><em>default to 'cpu'</em>) – Either ‘cpu’ or ‘gpu’, depending on the available hardware and
+user’s preferences.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>nr</strong> – Full network response with the <cite>n_sources</cite> network responses
+at each time step.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>(n_samples, n_sources) numpy.ndarray, float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="beamnetresponse.beamformed_nr.prestack_traces">
+<span class="sig-prename descclassname"><span class="pre">beamnetresponse.beamformed_nr.</span></span><span class="sig-name descname"><span class="pre">prestack_traces</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">detection_traces</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">weights_phases</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">device</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'cpu'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#beamnetresponse.beamformed_nr.prestack_traces" title="Permalink to this definition"></a></dt>
+<dd><p>Prestack the detection traces ahead of the beamforming.</p>
+<p>Channel-wise stacking for each target seismic phase can be done
+once and for all at the beginning of the compution.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>detection_traces</strong> (<em>(</em><em>n_stations</em><em>, </em><em>n_channels</em><em>, </em><em>n_stations</em><em>) </em><em>numpy.ndarray</em><em>, </em><em>float</em>) – Any characterization function computed from the continuous seismograms.</p></li>
+<li><p><strong>weights_phases</strong> (<em>(</em><em>n_stations</em><em>, </em><em>n_channels</em><em>, </em><em>n_phases</em><em>) </em><em>numpy.ndarray</em><em>, </em><em>float</em>) – Weight given to each station and channel for a given phase. For
+example, horizontal components might be given a small or zero
+weight for the P-wave stacking.</p></li>
+<li><p><strong>device</strong> (<em>string</em><em>, </em><em>default to 'cpu'</em>) – Either ‘cpu’ or ‘gpu’, depending on the available hardware and
+user’s preferences.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>prestacked_traces</strong> – Channel-wise stacked detection traces, optimally formatted for the C
+CUDA-C routines.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>(n_stations, n_samples, n_phases) numpy.ndarray, float</p>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="example.html" class="btn btn-neutral float-left" title="Example" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="../tutorial.html" class="btn btn-neutral float-right" title="Tutorial" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, Eric Beauce and William B. Frank.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

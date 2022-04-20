@@ -1,0 +1,7 @@
+API
+===
+
+.. automodule:: beamnetresponse.beamformed_nr
+   :members:
+   :undoc-members:
+   :show-inheritance:
