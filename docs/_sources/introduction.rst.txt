@@ -56,4 +56,4 @@ Required software/hardware:
 * CPU version:  Python 3.x, 
 * GPU version: Python 3.x and a discrete Nvidia graphics card that supports CUDA C with CUDA toolkit installed. 
 
-:py:data:`beamnetresponse` is known to run well with gcc 6.8.X, and cuda 10.X. However, parts of the CUDA code seems to be incompatible with cuda 11+.
+:py:data:`beamnetresponse` is known to run well with gcc 6.2.X, and cuda 10.X.

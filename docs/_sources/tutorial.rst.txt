@@ -6,4 +6,9 @@ Tutorial
    :caption: Contents:
 
    tutorial/general
-
+   tutorial/download_data
+   tutorial/format_data
+   tutorial/preprocessing
+   tutorial/tt_table
+   tutorial/compute_cnr
+   tutorial/show_results

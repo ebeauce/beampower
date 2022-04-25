@@ -1,14 +1,14 @@
 Pre-requisites
 ==============
 
-The goal of this tutorial is to design a workflow from scratch to detection earthquakes with `beamnetresponse`. We first download the data and preprocess them, then we compute the beamformed network response with `beamnetresponse` and identify earthquake detections based on a number of tunable parameters. Finally, we visualize the waveforms of the detected events.
+The goal of this tutorial is to design a workflow from scratch to detection earthquakes with :py:data:`beamnetresponse`. We first download the data and preprocess them, then we compute the beamformed network response with :py:data:`beamnetresponse` and identify earthquake detections based on a number of tunable parameters. Finally, we visualize the waveforms of the detected events.
 
 Environment
 -----------
 
-The tutorial requires a larger number of Python packages than `beamnetresponse` itself. Creating the virtual environment as described here is *essential* for running successfully the tutorial. We will use the python package manager `Anaconda`, or rather its ligther version `Miniconda`. Follow the instructions here `https://docs.conda.io/en/latest/miniconda.html <https://docs.conda.io/en/latest/miniconda.html>`_ to install `Miniconda`.
+The tutorial requires a larger number of Python packages than :py:data:`beamnetresponse` itself. Creating the virtual environment as described here is *essential* for running successfully the tutorial. We will use the python package manager `Anaconda`, or rather its ligther version `Miniconda`. Follow the instructions here `https://docs.conda.io/en/latest/miniconda.html <https://docs.conda.io/en/latest/miniconda.html>`_ to install `Miniconda`.
 
-Once `Anaconda` or `Miniconda` is installed, you can use the `conda` commands. We will first make sure that `conda` uses packages from `conda-forge` when necessary:
+Once `Anaconda` or `Miniconda` is installed, you can use the :py:data:`conda` commands. We will first make sure that :py:data:`conda` uses packages from :py:data:`conda-forge` when necessary:
 
 
 .. code-block:: console
@@ -20,17 +20,24 @@ We will then create a Python 3.10 environment named `bnr_tuto`:
 
 .. code-block:: console
 
-    $ conda create -n bnr_tuto python=3.10 compilers
+    $ conda create -n bnr_tuto python=3.10
 
-Note that we also added the `compilers` package to the environment to make sure that you locally install a recent C compiler. We now need to activate this environment:
-
+We now need to activate this environment:
 
 .. code-block:: console
 
     $ conda activate bnr_tuto
 
+In general, you can use :py:data:`conda` to locally install a C and a CUDA-C compiler.
 
-Run the following command to install all the packages need for this tutorial:
+.. code-block:: console
+
+    $ conda install gcc nvidia cuda-nvcc
+
+Note, however, that conflicts may arise between the compiler versions and your machine's drivers. Unfortunately, :py:data:`conda` is unaware of that. If you work on a supercomputer and can load compilers like "modules", I recommend you to do so. :py:data:`beamnetresponse` is known to run well with gcc 6.2.0 and cuda 10.2.
+
+
+Run the following command to install (almost) all the packages need for this tutorial:
 
 
 .. code-block:: console
@@ -38,4 +45,10 @@ Run the following command to install all the packages need for this tutorial:
     $ conda install obspy pyasdf numpy scipy pandas matplotlib h5py ipython jupyter cartopy
 
 
-Finally, we need to install `beamnetresponse` to our new environment. We refer you to :ref:`Installation` Setion of the documentation.
+Then, download Pykonal from `https://github.com/malcolmw/pykonal <https://github.com/malcolmw/pykonal>`_. Pykonal is the package we will use for computing the P- and S-wave travel times. Once downloaded and unpacked, go to Pykonal's root folder and run:
+
+.. code-block:: console
+
+    $ pip install .
+
+Finally, we need to install :py:data:`beamnetresponse` to our new environment. We refer you to the :ref:`Installation` Section of the documentation.
