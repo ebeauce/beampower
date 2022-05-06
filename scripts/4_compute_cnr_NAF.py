@@ -33,7 +33,9 @@ use_phasenet = False
 
 if use_phasenet:
     from phasenet import wrapper as PN
+    from scipy.ndimage import gaussian_filter1d
     output_filename = 'cnr_NAF_PN.h5'
+    smoothing = 5
 else:
     output_filename = 'cnr_NAF_env.h5'
 
@@ -70,8 +72,11 @@ if use_phasenet:
     # -- use PhaseNet as detection traces
     PN_probas, _ = PN.automatic_picking(
             data_arr[np.newaxis, ...], metadata['station_code'], '.',
-            'test', mini_batch_size=256)
+            'test', mini_batch_size=16)
     detection_traces = np.swapaxes(PN_probas.squeeze(), 2, 1)
+    # smooth PhaseNet's output so that it's easier to find good alignments
+    # with limited resolution moveouts
+    detection_traces = gaussian_filter1d(detection_traces, smoothing, axis=-1)
 else:
     # -- use envelopes as detection traces
     norm = scimad(data_arr, axis=-1)[..., np.newaxis]
