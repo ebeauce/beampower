@@ -138,7 +138,7 @@ void network_response(float* detection_traces, int* moveouts, float* weights,
         mv_max = moveouts_minmax[2*i+1];
         for (size_t t=0; t<n_samples; t++){
             // check out-of-bound operations
-            if ((t + mv_max) > n_samples) continue;
+            if ((t + mv_max) >= n_samples) continue;
             if ((t + mv_min) < 0) continue;
 
             // compute the beamformed network responses for all sources
@@ -191,7 +191,7 @@ void composite_network_response(
         for (size_t i=0; i<n_sources; i++){
 
             // check out-of-bound operations
-            if (t + moveouts_minmax[2*i+1] > n_samples) continue;
+            if (t + moveouts_minmax[2*i+1] >= n_samples) continue;
             if (t + moveouts_minmax[2*i+0] < 0) continue;
 
             mv_offset = i*n_stations*n_phases;
