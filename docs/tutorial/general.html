@@ -43,6 +43,8 @@
 <li class="toctree-l1 current"><a class="reference internal" href="../tutorial.html">Tutorial</a><ul class="current">
 <li class="toctree-l2 current"><a class="current reference internal" href="#">Pre-requisites</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#environment">Environment</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#going-further">Going Further</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#reference">Reference</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="download_data.html">0. Download data</a></li>
@@ -113,6 +115,18 @@
 </pre></div>
 </div>
 <p>Finally, we need to install <code class="xref py py-data docutils literal notranslate"><span class="pre">beamnetresponse</span></code> to our new environment. We refer you to the <a class="reference internal" href="../introduction.html#installation"><span class="std std-ref">Installation</span></a> Section of the documentation.</p>
+</div>
+<div class="section" id="going-further">
+<h2>Going Further<a class="headerlink" href="#going-further" title="Permalink to this headline"></a></h2>
+<p>In this tutorial, I offer the possibility to use <code class="xref py py-data docutils literal notranslate"><span class="pre">beamnetresponse</span></code> to backproject the output of single-station deep learning models, such as PhaseNet (see Reference). Backprojection is a simple, physics-based method to aggregate these efficient single-station models into a network detector. In order to run the tutorial with PhaseNet, you will have to install <code class="xref py py-data docutils literal notranslate"><span class="pre">phasenet</span></code> from my Github (I added wrapper functions to use PhaseNet from within a python script) at: <a class="reference external" href="https://github.com/ebeauce/PhaseNet">https://github.com/ebeauce/PhaseNet</a>. Go to PhaseNet’s root folder and run:</p>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp">$ </span>pip install .
+</pre></div>
+</div>
+<p>This should download the package <code class="xref py py-data docutils literal notranslate"><span class="pre">tensorflow</span></code> and may take some time.</p>
+</div>
+<div class="section" id="reference">
+<h2>Reference<a class="headerlink" href="#reference" title="Permalink to this headline"></a></h2>
+<p>Zhu, Weiqiang, and Gregory C. Beroza. “PhaseNet: a deep-neural-network-based seismic arrival-time picking method.” Geophysical Journal International 216, no. 1 (2019): 261-273.</p>
 </div>
 </div>
 

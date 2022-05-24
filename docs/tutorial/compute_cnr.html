@@ -84,7 +84,14 @@
 <div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp">$ </span>ipython 4_compute_cnr.py
 </pre></div>
 </div>
-<p>Here, we compute the <em>composite</em> network response for detecting and location earthquakes. The main parameter of this script we are interested in is <code class="xref py py-data docutils literal notranslate"><span class="pre">device</span></code>. You can set to <code class="xref py py-data docutils literal notranslate"><span class="pre">'cpu'</span></code> or <code class="xref py py-data docutils literal notranslate"><span class="pre">'gpu'</span></code> whether you want to test the CPU or GPU implementation of <code class="xref py py-data docutils literal notranslate"><span class="pre">beamnetresponse</span></code>.</p>
+<p>Here, we compute the <em>composite</em> network response for detecting and location earthquakes. The main parameter of this script we are interested in is <code class="xref py py-data docutils literal notranslate"><span class="pre">device</span></code>. You can set to <code class="xref py py-data docutils literal notranslate"><span class="pre">'cpu'</span></code> or <code class="xref py py-data docutils literal notranslate"><span class="pre">'gpu'</span></code> whether you want to test the CPU or GPU implementation of <code class="xref py py-data docutils literal notranslate"><span class="pre">beamnetresponse</span></code>. For those of you who followed the “Going Further” section of the pre-requisites to use <code class="xref py py-data docutils literal notranslate"><span class="pre">phasenet</span></code>, modify the line with:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">use_phasenet</span> <span class="o">=</span> <span class="kc">False</span>
+</pre></div>
+</div>
+<p>to</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">use_phasenet</span> <span class="o">=</span> <span class="kc">True</span>
+</pre></div>
+</div>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">os</span>
 <span class="kn">import</span> <span class="nn">sys</span>
 
