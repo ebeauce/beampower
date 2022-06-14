@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <math.h>
+#include <float.h>
 #include <omp.h>
 #include <limits.h>
 #include "beamformed_nr_CPU.h"
@@ -168,9 +169,9 @@ void composite_network_response(
     size_t mv_offset; // location on moveouts pointer
     size_t weights_offset; // location on weights pointer
     int *moveouts_minmax; // vector with min and max mv of each source
-    float current_nr = 0.; // value of currently computed nr
-    float largest_nr = 0.; // current largest visited nr
-    int largest_nr_index = 0; // source index of current largest visited nr
+    float current_nr; // value of currently computed nr
+    float largest_nr; // current largest visited nr
+    int largest_nr_index; // source index of current largest visited nr
 
     // search for min and max moveout of each source
     moveouts_minmax = (int *)malloc(2*n_sources*sizeof(int));
@@ -185,7 +186,7 @@ void composite_network_response(
     private(mv_offset, weights_offset, largest_nr, largest_nr_index, current_nr)\
     shared(detection_traces, moveouts, weights, nr, source_index_nr)
     for (size_t t=0; t<n_samples; t++){
-        largest_nr = 0.;
+        largest_nr = -FLT_MAX;
         largest_nr_index = 0;
 
         for (size_t i=0; i<n_sources; i++){
@@ -210,7 +211,7 @@ void composite_network_response(
                 largest_nr_index = i;
             }
         }
-        nr[t] = largest_nr;
+        if (largest_nr > -FLT_MAX) nr[t] = largest_nr;
         source_index_nr[t] = largest_nr_index;
     }
 }
