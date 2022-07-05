@@ -102,10 +102,10 @@
 </pre></div>
 </div>
 <p>In general, you can use <code class="xref py py-data docutils literal notranslate"><span class="pre">conda</span></code> to locally install a C and a CUDA-C compiler.</p>
-<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp">$ </span>conda install gcc nvidia cuda-nvcc
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp">$ </span>conda install gcc
+<span class="gp">$ </span>conda install -c nvidia cuda-nvcc cuda-toolkit
 </pre></div>
 </div>
-<p>Note, however, that conflicts may arise between the compiler versions and your machine’s drivers. Unfortunately, <code class="xref py py-data docutils literal notranslate"><span class="pre">conda</span></code> is unaware of that. If you work on a supercomputer and can load compilers like “modules”, I recommend you to do so. <code class="xref py py-data docutils literal notranslate"><span class="pre">beamnetresponse</span></code> is known to run well with gcc 6.2.0 and cuda 10.2.</p>
 <p>Run the following command to install (almost) all the packages need for this tutorial:</p>
 <div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp">$ </span>conda install obspy pyasdf numpy scipy pandas matplotlib h5py ipython jupyter cartopy
 </pre></div>
