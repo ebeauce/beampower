@@ -19,6 +19,11 @@ LDFLAGS_CPU=-shared
 # GPU FLAGS
 COPTIMFLAGS_GPU=-O3
 CFLAGS_GPU=-Xcompiler "-fopenmp -fPIC -march=native -ftree-vectorize" -Xlinker -lgomp
+# --gpu-architecture specifies the virtual architecture, this should be set to
+#  the lowest compute capability required by the application, here: 3.5
+# --gpu-code specifies the real architecture, this should be set to the actual
+#  hardware. See https://developer.nvidia.com/cuda-gpus to find the compute
+#  capability of your card
 VIRTUALARCH=--gpu-architecture=compute_35 # do not edit this flag
 CARDDEPENDENTFLAG=--gpu-code=sm_75
 LDFLAGS_GPU=--shared
