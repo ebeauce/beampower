@@ -2,7 +2,8 @@ import os
 
 path_script = os.path.dirname(__file__)
 
-from obspy.clients.fdsn import Client
+from obspy.clients.fdsn.mass_downloader import RectangularDomain,\
+        Restrictions, MassDownloader
 from obspy import UTCDateTime as udt
 
 path_data = os.path.join(path_script, os.pardir, 'data')
@@ -10,7 +11,7 @@ if not os.path.isdir(path_data):
     print(f'Creating a new data folder at {path_data}')
     os.mkdir(path_data)
 
-client = Client("IRIS")
+provider = 'IRIS'
 
 network = 'YH'
 loc = '*'
@@ -21,13 +22,27 @@ endtime = udt('2012-07-27')
 
 station_list = ['SAUV', 'SPNC', 'DC08', 'DC07', 'DC06', 'DD06', 'DE07', 'DE08']
 
-for sta in station_list:
-    print(f'Trying to download data from {sta}...')
-    st = client.get_waveforms(
-            network, sta, loc, channel, starttime, endtime)
-    for tr in st:
-        inv = client.get_stations(
-                network=network, station=sta, starttime=starttime, endtime=endtime,
-                channel=tr.stats.channel, level='response')
-        tr.write(os.path.join(path_data, tr.id+'.mseed'), format='mseed')
-        inv.write(os.path.join(path_data, tr.id+'.xml'), format='STATIONXML')
+domain = RectangularDomain(
+        minlatitude=40.60, maxlatitude=40.76,
+        minlongitude=30.20, maxlongitude=30.44
+        )
+
+restrictions = Restrictions(
+        starttime=starttime,
+        endtime=endtime,
+        chunklength_in_sec=86400.,
+        network=network,
+        location=loc,
+        channel=channel,
+        station=station_list,
+        reject_channels_with_gaps=False,
+        minimum_length=0.0,
+        minimum_interstation_distance_in_m=100.0
+        )
+
+
+mdl = MassDownloader(providers=[provider])
+mdl.download(
+        domain, restrictions, mseed_storage=path_data,
+        stationxml_storage=path_data)
+
