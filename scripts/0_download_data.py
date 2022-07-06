@@ -20,7 +20,7 @@ channel = 'BH*,HH*'
 starttime = udt('2012-07-26')
 endtime = udt('2012-07-27')
 
-station_list = ['SAUV', 'SPNC', 'DC08', 'DC07', 'DC06', 'DD06', 'DE07', 'DE08']
+station_list = 'SAUV,SPNC,DC08,DC07,DC06,DD06,DE07,DE08'
 
 domain = RectangularDomain(
         minlatitude=40.60, maxlatitude=40.76,
@@ -37,7 +37,8 @@ restrictions = Restrictions(
         station=station_list,
         reject_channels_with_gaps=False,
         minimum_length=0.0,
-        minimum_interstation_distance_in_m=100.0
+        minimum_interstation_distance_in_m=100.0,
+        channel_priorities=["HH[ZNE]", "BH[ZNE]"]
         )
 
 
