@@ -1,6 +1,10 @@
 import os
 import sys
 
+# import pyasdf here because the import order may
+# cause issues on some machines
+import pyasdf
+
 import pathlib
 script_folder = pathlib.Path(__file__).parent.resolve()
 sys.path.append(script_folder)
