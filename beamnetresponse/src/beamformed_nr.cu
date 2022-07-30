@@ -135,6 +135,7 @@ void composite_network_response(float* detection_traces, int* moveouts, float* w
      * but also rupture progation imaging (back-projection). */
 
     int nGPUs=0;
+    size_t Mb = MEGABYTE;
     //cudaError_t cuda_result;
 
     // count the number of available GPUs
@@ -211,7 +212,7 @@ void composite_network_response(float* detection_traces, int* moveouts, float* w
         cudaMemGetInfo(&freeMem, &totalMem);
         if (sizeoftotal > freeMem) {
             printf("%zu Mb are requested on GPU #%i whereas it has only %zu free Mb.\n",
-                   sizeoftotal/MEGABYTE, id, freeMem/MEGABYTE);
+                   sizeoftotal/Mb, id, freeMem/Mb);
             printf("Consider reducing the duration of the seismograms processed"\
                    " at once, or downsample the source grid.\n");
             exit(0);
@@ -316,6 +317,7 @@ void network_response(float* detection_traces, int* moveouts, float* weights,
         float* nr){
 
     int nGPUs=0;
+    size_t Mb = MEGABYTE;
     //cudaError_t cuda_result;
 
     // count the number of available GPUs
@@ -386,7 +388,7 @@ void network_response(float* detection_traces, int* moveouts, float* weights,
         cudaMemGetInfo(&freeMem, &totalMem);
         if (sizeoftotal > freeMem) {
             printf("%zu Mb are requested on GPU #%i whereas it has only %zu free Mb.\n",
-                   sizeoftotal/MEGABYTE, id, freeMem/MEGABYTE);
+                   sizeoftotal/Mb, id, freeMem/Mb);
             printf("Consider reducing the duration of the seismograms processed"\
                    " at once, or downsample the source grid.\n");
             exit(0);
