@@ -1,5 +1,5 @@
 """
-Minimal setup file for the beamnetresponse library for Python packaging.
+Minimal setup file for the beampower library for Python packaging.
 :copyright:
     Eric Beauce
 :license:
@@ -13,14 +13,14 @@ from setuptools.command.build_ext import build_ext as build_ext_original
 from subprocess import call
 
 
-class BNRExtension(Extension):
+class BPExtension(Extension):
     def __init__(self, name):
         # Don't run the default setup-tools build commands, use the custom one
         Extension.__init__(self, name=name, sources=[])
 
 
 # Define a new build command
-class BeamNetResponseBuild(build_ext_original):
+class BeamPowerBuild(build_ext_original):
     def run(self):
         # Build the Python libraries via Makefile
         cpu_make = ['make', 'python_CPU']
@@ -45,24 +45,24 @@ with open("README.md", "r", encoding="utf-8") as fh:
     long_description = fh.read()
 
 setup(
-    name="beamnetresponse",
-    version="0.0.1",
-    author="Eric Beaucé, William B. Frank",
+    name="beampower",
+    version="1.0.1",
+    author="Eric Beauce, William B. Frank, Leonard Seydoux",
     author_email="ebeauce@ldeo.columbia.edu",
     description="Package for beamforming/backprojection.",
     long_description=long_description,
     long_description_content_type="text/markdown",
-    url="https://github.com/ebeauce/beamnetresponse",
+    url="https://github.com/ebeauce/beampower",
     project_urls={
-        "Bug Tracker": "https://github.com/ebeauce/beamnetresponse/issues",
+        "Bug Tracker": "https://github.com/ebeauce/beampower/issues",
     },
     classifiers=[
-        "Programming Language :: Python :: 2.7, 3.5, 3.6, 3.7, 3.8",
+        "Programming Language :: Python :: 2.7, 3.5, 3.6, 3.7, 3.8, 3.9, 3.10",
         "License :: OSI Approved :: GPL License",
         "Operating System :: OS Independent",
     ],
     license="GPL",
-    packages=['beamnetresponse'],
+    packages=['beampower'],
     include_package_data=True,
     zip_safe=False,
     install_requires=[
@@ -70,7 +70,7 @@ setup(
         ],
     python_requires=">=2.7",
     cmdclass={
-        'build_ext': BeamNetResponseBuild},
-    ext_modules=[BNRExtension('beamnetresponse.lib.beamformed_nr_CPU'),
-                 BNRExtension('beamnetresponse.lib.beamformed_nr_GPU')]
+        'build_ext': BeamPowerBuild},
+    ext_modules=[BPExtension('beampower.lib.beamform_cpu'),
+                 BPExtension('beampower.lib.beamform_gpu')]
 )
