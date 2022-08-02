@@ -40,7 +40,7 @@ void _find_minmax_moveouts(int* moveouts, float* weights, size_t n_sources,
     }
 }
 
-float _beam(float* detection_traces, int* moveouts, float* weights,
+float _beam(float* waveform_features, int* moveouts, float* weights,
             size_t n_samples, size_t n_stations, size_t n_phases) {
 
     /* Build a beam of the detection traces using the input moveouts.
@@ -56,15 +56,15 @@ float _beam(float* detection_traces, int* moveouts, float* weights,
             // phase loop
             det_tr_offset = s*n_samples*n_phases + p\
                             + n_phases*moveouts[s*n_phases + p];
-            beam += weights[s]*detection_traces[det_tr_offset];
+            beam += weights[s]*waveform_features[det_tr_offset];
         }
     }
     return beam;
 }
 
 
-void prestack_detection_traces(
-        float* detection_traces, float* weights_phases,
+void prestack_waveform_features(
+        float* waveform_features, float* weights_phases,
         size_t n_samples, size_t n_stations, size_t n_channels,
         size_t n_phases, float* prestack_traces){
 
@@ -78,7 +78,7 @@ void prestack_detection_traces(
 
 #pragma omp parallel for\
     private(prestack_offset, det_tr_offset, weight_offset)\
-    shared(detection_traces, weights_phases, prestack_traces)
+    shared(waveform_features, weights_phases, prestack_traces)
     for (size_t s=0; s<n_stations; s++){
         // station loop
         for (size_t t=0; t<n_samples; t++){
@@ -94,7 +94,7 @@ void prestack_detection_traces(
                     det_tr_offset = s*n_channels*n_samples + c*n_samples + t;
                     weight_offset = s*n_channels*n_phases + c*n_phases + p;
                     prestack_traces[prestack_offset] += \
-                        weights_phases[weight_offset]*detection_traces[det_tr_offset];
+                        weights_phases[weight_offset]*waveform_features[det_tr_offset];
                 }
             }
         }
@@ -102,7 +102,7 @@ void prestack_detection_traces(
 }
 
 
-void network_response(float* detection_traces, int* moveouts, float* weights,
+void network_response(float* waveform_features, int* moveouts, float* weights,
                       size_t n_samples, size_t n_sources, size_t n_stations,
                       size_t n_phases, float* nr) {
 
@@ -130,7 +130,7 @@ void network_response(float* detection_traces, int* moveouts, float* weights,
                           moveouts_minmax);
 #pragma omp parallel for\
     private(mv_offset, weights_offset, nr_offset)\
-    shared(detection_traces, moveouts, nr)
+    shared(waveform_features, moveouts, nr)
     for (size_t i=0; i<n_sources; i++){
         mv_offset = i*n_stations*n_phases;
         weights_offset = i*n_stations;
@@ -143,7 +143,7 @@ void network_response(float* detection_traces, int* moveouts, float* weights,
             if ((t + mv_min) < 0) continue;
 
             // compute the beamformed network responses for all sources
-            nr[nr_offset + t] = _beam(detection_traces + n_phases*t,
+            nr[nr_offset + t] = _beam(waveform_features + n_phases*t,
                                       moveouts + mv_offset,
                                       weights + weights_offset,
                                       n_samples,
@@ -154,7 +154,7 @@ void network_response(float* detection_traces, int* moveouts, float* weights,
 }
 
 void composite_network_response(
-        float *detection_traces, int *moveouts, float *weights,
+        float *waveform_features, int *moveouts, float *weights,
         size_t n_samples, size_t n_sources, size_t n_stations,
         size_t n_phases, float *nr, int *source_index_nr) {
 
@@ -184,7 +184,7 @@ void composite_network_response(
                           moveouts_minmax);
 #pragma omp parallel for\
     private(mv_offset, weights_offset, largest_nr, largest_nr_index, current_nr)\
-    shared(detection_traces, moveouts, weights, nr, source_index_nr)
+    shared(waveform_features, moveouts, weights, nr, source_index_nr)
     for (size_t t=0; t<n_samples; t++){
         largest_nr = -FLT_MAX;
         largest_nr_index = 0;
@@ -199,7 +199,7 @@ void composite_network_response(
             weights_offset = i*n_stations;
 
             // compute the beamformed network responses for all sources
-            current_nr = _beam(detection_traces + n_phases*t,
+            current_nr = _beam(waveform_features + n_phases*t,
                                moveouts + mv_offset,
                                weights + weights_offset,
                                n_samples,

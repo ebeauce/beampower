@@ -59,7 +59,7 @@ void __global__ _find_minmax_moveouts_ker(int* moveouts, float* weights,
 
 }
 
-void __global__ _beam(float *detection_traces, int *moveouts,
+void __global__ _beam(float *waveform_features, int *moveouts,
         int *moveouts_minmax, float *weights, size_t global_time_index,
         size_t n_samples, size_t n_stations, size_t n_phases, 
         size_t dim0_nr, float *nr){
@@ -95,7 +95,7 @@ void __global__ _beam(float *detection_traces, int *moveouts,
                 det_tr_offset = s*n_samples*n_phases + p\
                                 + n_phases*moveouts_s[s*n_phases + p]\
                                 + n_phases*threadIdx.x;
-                beam += weights_s[s]*detection_traces[det_tr_offset];
+                beam += weights_s[s]*waveform_features[det_tr_offset];
             }
         }
         // update nr
@@ -123,7 +123,7 @@ void __global__ _cnr(float *nr, size_t n_sources, float *cnr,
 
 }
 
-void composite_network_response(float* detection_traces, int* moveouts, float* weights,
+void composite_network_response(float* waveform_features, int* moveouts, float* weights,
         size_t n_samples, size_t n_sources, size_t n_stations, size_t n_phases,
         float* cnr, int* source_index_cnr){
 
@@ -151,7 +151,7 @@ void composite_network_response(float* detection_traces, int* moveouts, float* w
 
     // start a parallel section to distribute tasks across GPUs
 #pragma omp parallel firstprivate(n_sources_per_GPU, nGPUs)\
-    shared(detection_traces, moveouts, weights, cnr)
+    shared(waveform_features, moveouts, weights, cnr)
     {
         // associate thread to a single GPU and get
         // GPU characteristics such as memory capacity
@@ -186,7 +186,7 @@ void composite_network_response(float* detection_traces, int* moveouts, float* w
         }
 
         // declare device pointers
-        float *detection_traces_d;
+        float *waveform_features_d;
         int *moveouts_d;
         int *moveouts_minmax_d;
         float *weights_d;
@@ -220,7 +220,7 @@ void composite_network_response(float* detection_traces, int* moveouts, float* w
 
 
         // allocate GPU memory
-        cudaMalloc((void**)&detection_traces_d, sizeofdata);
+        cudaMalloc((void**)&waveform_features_d, sizeofdata);
         cudaMalloc((void**)&moveouts_d, sizeofmoveouts);
         cudaMalloc((void**)&moveouts_minmax_d, sizeofmoveouts_minmax);
         cudaMalloc((void**)&weights_d, sizeofweights);
@@ -232,7 +232,7 @@ void composite_network_response(float* detection_traces, int* moveouts, float* w
         source_index_cnr_thread = (int *)malloc(sizeofcnr);
 
         // transfer data from host (CPU) to device (GPU)
-        cudaMemcpy(detection_traces_d, detection_traces, sizeofdata,
+        cudaMemcpy(waveform_features_d, waveform_features, sizeofdata,
                 cudaMemcpyHostToDevice);
         cudaMemcpy(moveouts_d, moveouts + src_idx_start*n_stations*n_phases,
                 sizeofmoveouts, cudaMemcpyHostToDevice);
@@ -260,7 +260,7 @@ void composite_network_response(float* detection_traces, int* moveouts, float* w
             // grid locations and at BLOCKSIZE time locations
             _beam<<<n_sources_per_GPU,
                     BLOCKSIZE, shared_mem>>>(
-                            detection_traces_d + n_phases*time_GPU, moveouts_d,
+                            waveform_features_d + n_phases*time_GPU, moveouts_d,
                             moveouts_minmax_d, weights_d, time_GPU, n_samples,
                             n_stations, n_phases, BLOCKSIZE, nr_d);
 
@@ -299,7 +299,7 @@ void composite_network_response(float* detection_traces, int* moveouts, float* w
         }
 
         // free memory
-        cudaFree(detection_traces_d);
+        cudaFree(waveform_features_d);
         cudaFree(moveouts_d);
         cudaFree(moveouts_minmax_d);
         cudaFree(weights_d);
@@ -312,7 +312,7 @@ void composite_network_response(float* detection_traces, int* moveouts, float* w
 
 }
 
-void network_response(float* detection_traces, int* moveouts, float* weights,
+void network_response(float* waveform_features, int* moveouts, float* weights,
         size_t n_samples, size_t n_sources, size_t n_stations, size_t n_phases,
         float* nr){
 
@@ -333,7 +333,7 @@ void network_response(float* detection_traces, int* moveouts, float* weights,
 
     // start a parallel section to distribute tasks across GPUs
 #pragma omp parallel firstprivate(n_sources_per_GPU, nGPUs)\
-    shared(detection_traces, moveouts, weights, nr)
+    shared(waveform_features, moveouts, weights, nr)
     {
         // associate thread to a single GPU and get
         // GPU characteristics such as memory capacity
@@ -368,7 +368,7 @@ void network_response(float* detection_traces, int* moveouts, float* weights,
         }
 
         // declare device pointers
-        float *detection_traces_d;
+        float *waveform_features_d;
         int *moveouts_d;
         int *moveouts_minmax_d;
         float *weights_d;
@@ -396,14 +396,14 @@ void network_response(float* detection_traces, int* moveouts, float* weights,
 
 
         // allocate GPU memory
-        cudaMalloc((void**)&detection_traces_d, sizeofdata);
+        cudaMalloc((void**)&waveform_features_d, sizeofdata);
         cudaMalloc((void**)&moveouts_d, sizeofmoveouts);
         cudaMalloc((void**)&moveouts_minmax_d, sizeofmoveouts_minmax);
         cudaMalloc((void**)&weights_d, sizeofweights);
         cudaMalloc((void**)&nr_d, sizeofnr);
 
         // transfer data from host (CPU) to device (GPU)
-        cudaMemcpy(detection_traces_d, detection_traces, sizeofdata,
+        cudaMemcpy(waveform_features_d, waveform_features, sizeofdata,
                 cudaMemcpyHostToDevice);
         cudaMemcpy(moveouts_d, moveouts + src_idx_start*n_stations*n_phases,
                 sizeofmoveouts, cudaMemcpyHostToDevice);
@@ -431,7 +431,7 @@ void network_response(float* detection_traces, int* moveouts, float* weights,
             // grid locations and at BLOCKSIZE time locations
             _beam<<<n_sources_per_GPU,
                     BLOCKSIZE, shared_mem>>>(
-                            detection_traces_d + n_phases*time_GPU, moveouts_d,
+                            waveform_features_d + n_phases*time_GPU, moveouts_d,
                             moveouts_minmax_d, weights_d, time_GPU, n_samples,
                             n_stations, n_phases, n_samples, nr_d + time_GPU);
 
@@ -444,7 +444,7 @@ void network_response(float* detection_traces, int* moveouts, float* weights,
                 cudaMemcpyDeviceToHost);
 
         // free memory
-        cudaFree(detection_traces_d);
+        cudaFree(waveform_features_d);
         cudaFree(moveouts_d);
         cudaFree(moveouts_minmax_d);
         cudaFree(weights_d);
