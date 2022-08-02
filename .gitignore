@@ -166,3 +166,8 @@ ENV/
 
 # Matlab Mex
 *.mex*
+
+# Data 
+**.h5
+**.mseed
+**.xml
