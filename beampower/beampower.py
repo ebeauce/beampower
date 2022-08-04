@@ -10,8 +10,8 @@ CPU_LOADED = False
 GPU_LOADED = False
 
 try:
-    _libCPU = ct.cdll.LoadLibrary(os.path.join(path, "beamformed_nr_CPU.so"))
-    _libCPU.network_response.argtypes = [
+    _libCPU = ct.cdll.LoadLibrary(os.path.join(path, "beamform_cpu.so"))
+    _libCPU.beamform.argtypes = [
         ct.POINTER(ct.c_float),  # waveform_features
         ct.POINTER(ct.c_int),  # time_delays
         ct.POINTER(ct.c_float),  # weights_sources
@@ -21,7 +21,7 @@ try:
         ct.c_size_t,  # n_phases
         ct.POINTER(ct.c_float),
     ]  # nr
-    _libCPU.composite_network_response.argtypes = [
+    _libCPU.beamform_max.argtypes = [
         ct.POINTER(ct.c_float),  # waveform_features
         ct.POINTER(ct.c_int),  # time_delays
         ct.POINTER(ct.c_float),  # weights_sources
@@ -49,8 +49,8 @@ except OSError:
     )
 
 try:
-    _libGPU = ct.cdll.LoadLibrary(os.path.join(path, "beamformed_nr_GPU.so"))
-    _libGPU.network_response.argtypes = [
+    _libGPU = ct.cdll.LoadLibrary(os.path.join(path, "beamform_gpu.so"))
+    _libGPU.beamform.argtypes = [
         ct.POINTER(ct.c_float),  # waveform_features
         ct.POINTER(ct.c_int),  # time_delays
         ct.POINTER(ct.c_float),  # weights_sources
@@ -60,7 +60,7 @@ try:
         ct.c_size_t,  # n_phases
         ct.POINTER(ct.c_float),
     ]  # nr
-    _libGPU.composite_network_response.argtypes = [
+    _libGPU.beamform_max.argtypes = [
         ct.POINTER(ct.c_float),  # waveform_features
         ct.POINTER(ct.c_int),  # time_delays
         ct.POINTER(ct.c_float),  # weights_sources
@@ -88,7 +88,11 @@ except OSError:
 
 
 def network_response(
-    waveform_features, time_delays, weights_phases, weights_sources, device="cpu"
+    waveform_features,
+    time_delays,
+    weights_phases,
+    weights_sources,
+    device="cpu",
 ):
     """Compute the beamformed network response.
 
@@ -128,7 +132,9 @@ def network_response(
     n_sources, _, n_phases = time_delays.shape
 
     # prestack detection traces
-    waveform_features = prestack_traces(waveform_features, weights_phases, device="cpu")
+    waveform_features = prestack_traces(
+        waveform_features, weights_phases, device="cpu"
+    )
 
     waveform_features = np.float32(waveform_features.flatten())
     time_delays = np.int32(time_delays.flatten())
@@ -137,7 +143,7 @@ def network_response(
     nr = np.zeros(n_sources * n_samples, dtype=np.float32)
 
     if device.lower() == "cpu":
-        _libCPU.network_response(
+        _libCPU.beamform(
             waveform_features.ctypes.data_as(ct.POINTER(ct.c_float)),
             time_delays.ctypes.data_as(ct.POINTER(ct.c_int)),
             weights_sources.ctypes.data_as(ct.POINTER(ct.c_float)),
@@ -148,7 +154,7 @@ def network_response(
             nr.ctypes.data_as(ct.POINTER(ct.c_float)),
         )
     elif device.lower() == "gpu":
-        _libGPU.network_response(
+        _libGPU.beamform(
             waveform_features.ctypes.data_as(ct.POINTER(ct.c_float)),
             time_delays.ctypes.data_as(ct.POINTER(ct.c_int)),
             weights_sources.ctypes.data_as(ct.POINTER(ct.c_float)),
@@ -165,7 +171,11 @@ def network_response(
 
 
 def composite_network_response(
-    waveform_features, time_delays, weights_phases, weights_sources, device="cpu"
+    waveform_features,
+    time_delays,
+    weights_phases,
+    weights_sources,
+    device="cpu",
 ):
     """Compute the composite beamformed network response.
 
@@ -204,9 +214,12 @@ def composite_network_response(
     """
     n_stations, n_channels, n_samples = waveform_features.shape
     n_sources, _, n_phases = time_delays.shape
+    print(n_stations, n_sources, n_channels, n_samples, n_phases)
 
     # prestack detection traces
-    waveform_features = prestack_traces(waveform_features, weights_phases, device="cpu")
+    waveform_features = prestack_traces(
+        waveform_features, weights_phases, device="cpu"
+    )
 
     waveform_features = np.float32(waveform_features.flatten())
     time_delays = np.int32(time_delays.flatten())
@@ -216,7 +229,7 @@ def composite_network_response(
     source_index_nr = np.zeros(n_samples, dtype=np.int32)
 
     if device.lower() == "cpu":
-        _libCPU.composite_network_response(
+        _libCPU.beamform_max(
             waveform_features.ctypes.data_as(ct.POINTER(ct.c_float)),
             time_delays.ctypes.data_as(ct.POINTER(ct.c_int)),
             weights_sources.ctypes.data_as(ct.POINTER(ct.c_float)),
@@ -228,7 +241,7 @@ def composite_network_response(
             source_index_nr.ctypes.data_as(ct.POINTER(ct.c_int)),
         )
     elif device.lower() == "gpu":
-        _libGPU.composite_network_response(
+        _libGPU.beamform_max(
             waveform_features.ctypes.data_as(ct.POINTER(ct.c_float)),
             time_delays.ctypes.data_as(ct.POINTER(ct.c_int)),
             weights_sources.ctypes.data_as(ct.POINTER(ct.c_float)),
@@ -272,7 +285,9 @@ def prestack_traces(waveform_features, weights_phases, device="cpu"):
 
     n_stations, n_channels, n_samples = waveform_features.shape
     _, _, n_phases = weights_phases.shape
-    prestacked_traces = np.zeros((n_stations * n_samples * n_phases), dtype=np.float32)
+    prestacked_traces = np.zeros(
+        (n_stations * n_samples * n_phases), dtype=np.float32
+    )
 
     waveform_features = np.float32(waveform_features.flatten())
     weights_phases = np.float32(weights_phases.flatten())
