@@ -168,6 +168,7 @@ ENV/
 *.mex*
 
 # Data 
-**.h5
-**.mseed
-**.xml
+*.h5
+*.nc
+*.mseed
+*.xml
