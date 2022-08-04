@@ -214,7 +214,6 @@ def composite_network_response(
     """
     n_stations, n_channels, n_samples = waveform_features.shape
     n_sources, _, n_phases = time_delays.shape
-    print(n_stations, n_sources, n_channels, n_samples, n_phases)
 
     # prestack detection traces
     waveform_features = prestack_traces(
