@@ -20,7 +20,7 @@ try:
         ct.c_size_t,  # n_stations
         ct.c_size_t,  # n_phases
         ct.POINTER(ct.c_float),
-    ]  # nr
+    ]  # beam
     _libCPU.beamform_max.argtypes = [
         ct.POINTER(ct.c_float),  # waveform_features
         ct.POINTER(ct.c_int),  # time_delays
@@ -29,9 +29,9 @@ try:
         ct.c_size_t,  # n_sources
         ct.c_size_t,  # n_stations
         ct.c_size_t,  # n_phases
-        ct.POINTER(ct.c_float),  # nr
+        ct.POINTER(ct.c_float),  # beam_max
         ct.POINTER(ct.c_int),
-    ]  # source_index_nr
+    ]  # source_index_beam_max
     _libCPU.prestack_waveform_features.argtypes = [
         ct.POINTER(ct.c_float),  # waveform_features
         ct.POINTER(ct.c_float),  # weights_phases
@@ -59,7 +59,7 @@ try:
         ct.c_size_t,  # n_stations
         ct.c_size_t,  # n_phases
         ct.POINTER(ct.c_float),
-    ]  # nr
+    ]  # beam
     _libGPU.beamform_max.argtypes = [
         ct.POINTER(ct.c_float),  # waveform_features
         ct.POINTER(ct.c_int),  # time_delays
@@ -68,9 +68,9 @@ try:
         ct.c_size_t,  # n_sources
         ct.c_size_t,  # n_stations
         ct.c_size_t,  # n_phases
-        ct.POINTER(ct.c_float),  # nr
+        ct.POINTER(ct.c_float),  # beam_max
         ct.POINTER(ct.c_int),
-    ]  # source_index_nr
+    ]  # source_index_beam_max
     # _libGPU.prestack_waveform_features.argtypes = [
     #        ct.POINTER(ct.c_float),   # waveform_features
     #        ct.POINTER(ct.c_float),   # weights_phases
@@ -87,12 +87,8 @@ except OSError:
     )
 
 
-def network_response(
-    waveform_features,
-    time_delays,
-    weights_phases,
-    weights_sources,
-    device="cpu",
+def beamform(
+    waveform_features, time_delays, weights_phases, weights_sources, device="cpu"
 ):
     """Compute the beamformed network response.
 
@@ -123,7 +119,7 @@ def network_response(
 
     Returns
     --------
-    nr: (n_sources, n_samples) numpy.ndarray, float
+    beam: (n_sources, n_samples) numpy.ndarray, float
         Full network response with the `n_sources` network responses
         at each time step.
     """
@@ -140,7 +136,7 @@ def network_response(
     time_delays = np.int32(time_delays.flatten())
     weights_sources = np.float32(weights_sources.flatten())
 
-    nr = np.zeros(n_sources * n_samples, dtype=np.float32)
+    beam = np.zeros(n_sources * n_samples, dtype=np.float32)
 
     if device.lower() == "cpu":
         _libCPU.beamform(
@@ -151,7 +147,7 @@ def network_response(
             n_sources,
             n_stations,
             n_phases,
-            nr.ctypes.data_as(ct.POINTER(ct.c_float)),
+            beam.ctypes.data_as(ct.POINTER(ct.c_float)),
         )
     elif device.lower() == "gpu":
         _libGPU.beamform(
@@ -162,20 +158,16 @@ def network_response(
             n_sources,
             n_stations,
             n_phases,
-            nr.ctypes.data_as(ct.POINTER(ct.c_float)),
+            beam.ctypes.data_as(ct.POINTER(ct.c_float)),
         )
     else:
         print("device should cpu or gpu")
         return
-    return nr.reshape(n_sources, n_samples)
+    return beam.reshape(n_sources, n_samples)
 
 
-def composite_network_response(
-    waveform_features,
-    time_delays,
-    weights_phases,
-    weights_sources,
-    device="cpu",
+def beamform_max(
+    waveform_features, time_delays, weights_phases, weights_sources, device="cpu"
 ):
     """Compute the composite beamformed network response.
 
@@ -204,10 +196,10 @@ def composite_network_response(
 
     Returns
     --------
-    nr: (n_samples,) numpy.ndarray, float
+    beam_max: (n_samples,) numpy.ndarray, float
         Composite network response, that is the largest network response
         across the source grid at each time step.
-    source_index_nr: (n_samples,) numpy.ndarray, int
+    source_index_beam_max: (n_samples,) numpy.ndarray, int
         Source indexes associated with the composite network response.
         These give the location of the most likely seismic source at
         a given time.
@@ -224,8 +216,8 @@ def composite_network_response(
     time_delays = np.int32(time_delays.flatten())
     weights_sources = np.float32(weights_sources.flatten())
 
-    nr = np.zeros(n_samples, dtype=np.float32)
-    source_index_nr = np.zeros(n_samples, dtype=np.int32)
+    beam_max = np.zeros(n_samples, dtype=np.float32)
+    source_index_beam_max = np.zeros(n_samples, dtype=np.int32)
 
     if device.lower() == "cpu":
         _libCPU.beamform_max(
@@ -236,8 +228,8 @@ def composite_network_response(
             n_sources,
             n_stations,
             n_phases,
-            nr.ctypes.data_as(ct.POINTER(ct.c_float)),
-            source_index_nr.ctypes.data_as(ct.POINTER(ct.c_int)),
+            beam_max.ctypes.data_as(ct.POINTER(ct.c_float)),
+            source_index_beam_max.ctypes.data_as(ct.POINTER(ct.c_int)),
         )
     elif device.lower() == "gpu":
         _libGPU.beamform_max(
@@ -248,13 +240,13 @@ def composite_network_response(
             n_sources,
             n_stations,
             n_phases,
-            nr.ctypes.data_as(ct.POINTER(ct.c_float)),
-            source_index_nr.ctypes.data_as(ct.POINTER(ct.c_int)),
+            beam_max.ctypes.data_as(ct.POINTER(ct.c_float)),
+            source_index_beam_max.ctypes.data_as(ct.POINTER(ct.c_int)),
         )
     else:
         print("device should cpu or gpu")
         return
-    return nr, source_index_nr
+    return beam_max, source_index_beam_max
 
 
 def prestack_traces(waveform_features, weights_phases, device="cpu"):
