@@ -128,7 +128,9 @@ def beamform(
     n_sources, _, n_phases = time_delays.shape
 
     # prestack detection traces
-    waveform_features = prestack_traces(waveform_features, weights_phases, device="cpu")
+    waveform_features = prestack_traces(
+        waveform_features, weights_phases, device="cpu"
+    )
 
     waveform_features = np.float32(waveform_features.flatten())
     time_delays = np.int32(time_delays.flatten())
@@ -206,7 +208,9 @@ def beamform_max(
     n_sources, _, n_phases = time_delays.shape
 
     # prestack detection traces
-    waveform_features = prestack_traces(waveform_features, weights_phases, device="cpu")
+    waveform_features = prestack_traces(
+        waveform_features, weights_phases, device="cpu"
+    )
 
     waveform_features = np.float32(waveform_features.flatten())
     time_delays = np.int32(time_delays.flatten())
@@ -272,7 +276,9 @@ def prestack_traces(waveform_features, weights_phases, device="cpu"):
 
     n_stations, n_channels, n_samples = waveform_features.shape
     _, _, n_phases = weights_phases.shape
-    prestacked_traces = np.zeros((n_stations * n_samples * n_phases), dtype=np.float32)
+    prestacked_traces = np.zeros(
+        (n_stations * n_samples * n_phases), dtype=np.float32
+    )
 
     waveform_features = np.float32(waveform_features.flatten())
     weights_phases = np.float32(weights_phases.flatten())
