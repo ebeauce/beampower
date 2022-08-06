@@ -161,6 +161,9 @@ ENV/
 *.cubin
 *.fatbin
 
+# VSCode
+.vscode
+
 # PyCharm
 .idea
 
