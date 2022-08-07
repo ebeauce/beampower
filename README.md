@@ -1,15 +1,26 @@
 # Welcome to the __beampower__ repository!
 
-![](scripts/figures/logo.png)<br><br><br>
+<p align="center">
+<img src="scripts/figures/logo.png" width=500>
+</p><br><br><br><br>
 
+
+[![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
+![](https://img.shields.io/github/commit-activity/w/ebeauce/beamnetresponse)
+![](https://img.shields.io/github/last-commit/ebeauce/beamnetresponse)
+![](https://img.shields.io/github/stars/ebeauce/beamnetresponse?style=social)
+
+## About the package
 `beampower` is a package for beamforming (or backprojection) of seismic signal for event detection and location. The Python wrapper
 can call the C (CPU) or CUDA-C (GPU) implementation. See the documentation at [https://ebeauce.github.io/beampower/](https://ebeauce.github.io/beampower/).
 
-# How to cite this package
+## How to cite this package
 
 There is no publication (yet) for this repository, but if you use it, please acknowledge it in your manuscript's _Data and Resources_ or _Acknowledgements_ section.
 
-# Installation (manual build)
+# Installation 
+
+## Option 1: manual build
 
 Download the repository on your computer at any location with the following command or with another GitHub repository manager
 
@@ -21,7 +32,7 @@ Then, from the root of the repository, run the following commands:
     python setup.py build_ext
     pip install .
 
-# Installation (via build `pip`)
+## Option 2: via `pip`
 
 From anywhere, run:
 
