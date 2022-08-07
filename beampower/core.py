@@ -115,7 +115,7 @@ def load_library(device="cpu"):
                     "prestack_waveform_features_argtypes"
                 ]
 
-            # Stor pre-loaded library
+            # Store pre-loaded library
             LIBRARIES[device_name]["is_loaded"] = True
             LIBRARIES[device_name]["lib"] = lib
 

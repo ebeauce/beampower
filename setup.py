@@ -1,7 +1,7 @@
 """
 Minimal setup file for the beampower library for Python packaging.
 :copyright:
-    Eric Beauce
+    Eric Beauce, William B. Frank, Leonard Seydoux
 :license:
     GNU General Public License, Version 3
     (https://www.gnu.org/licenses/gpl-3.0.en.html)

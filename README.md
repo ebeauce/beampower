@@ -28,7 +28,6 @@ Download the repository on your computer at any location with the following comm
 
 Then, from the root of the repository, run the following commands:
 
-    cd beamnetresponse
     python setup.py build_ext
     pip install .
 
@@ -60,7 +59,7 @@ These notebooks require to install the following packages to be ran properly:
 
 - [ ] Link the doc in the `dev` branch
 - [ ] Describe the `reduce` argument in `beamform`
-- [ ] Describe `pykonal` issues with certain grids
+- [ ] Describe `pykonal` issues with some grids
 - [ ] Compare our locs with a catalog (?)
 
 
