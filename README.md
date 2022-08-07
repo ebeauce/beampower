@@ -10,17 +10,17 @@
 ![](https://img.shields.io/github/last-commit/ebeauce/beamnetresponse)
 ![](https://img.shields.io/github/stars/ebeauce/beamnetresponse?style=social)
 
-## About the package
+### About the package
 `beampower` is a package for beamforming (or backprojection) of seismic signal for event detection and location. The Python wrapper
 can call the C (CPU) or CUDA-C (GPU) implementation. See the documentation at [https://ebeauce.github.io/beampower/](https://ebeauce.github.io/beampower/).
 
-## How to cite this package
+### How to cite this package
 
 There is no publication (yet) for this repository, but if you use it, please acknowledge it in your manuscript's _Data and Resources_ or _Acknowledgements_ section.
 
-# Installation 
+## Installation 
 
-## Option 1: manual build
+### Option 1: manual build
 
 Download the repository on your computer at any location with the following command or with another GitHub repository manager
 
@@ -32,14 +32,14 @@ Then, from the root of the repository, run the following commands:
     python setup.py build_ext
     pip install .
 
-## Option 2: via `pip`
+### Option 2: via `pip`
 
 From anywhere, run:
 
     pip install git+https://github.com/ebeauce/beampower
 
 
-# Documentation and tutorials
+## Documentation and tutorials
 
 See the [documentation](https://ebeauce.github.io/beampower/) on how to use `beampower` to detect and locate earthquakes. The package also comes with several tutorial notebooks (included also in the doc): 
 
@@ -55,6 +55,14 @@ These notebooks require to install the following packages to be ran properly:
 - `matplotlib`  
 - `tqdm`  
 - `pykonal`
+
+## To-do's
+
+- [ ] Link the doc in the `dev` branch
+- [ ] Describe the `reduce` argument in `beamform`
+- [ ] Describe `pykonal` issues with certain grids
+- [ ] Compare our locs with a catalog (?)
+
 
 
 
