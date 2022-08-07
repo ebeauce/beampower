@@ -1,4 +1,4 @@
-from __future__ import print_function
+# coding: utf-8
 
 import os
 
@@ -88,7 +88,11 @@ except OSError:
 
 
 def beamform(
-    waveform_features, time_delays, weights_phases, weights_sources, device="cpu"
+    waveform_features,
+    time_delays,
+    weights_phases,
+    weights_sources,
+    device="cpu",
 ):
     """Compute the beamformed network response.
 
@@ -167,7 +171,11 @@ def beamform(
 
 
 def beamform_max(
-    waveform_features, time_delays, weights_phases, weights_sources, device="cpu"
+    waveform_features,
+    time_delays,
+    weights_phases,
+    weights_sources,
+    device="cpu",
 ):
     """Compute the composite beamformed network response.
 
