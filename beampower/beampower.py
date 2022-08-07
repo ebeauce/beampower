@@ -40,12 +40,20 @@ def beamform(
     device: string, default to 'cpu'
         Either 'cpu' or 'gpu', depending on the available hardware and
         user's preferences.
+    reduce: string, default to 'max'
+        Reduction operation applied to the beamformed network response. If
+        `reduce` is `'max'`, return the maximum network response of the grid at
+        each time step, as well as the source indexes. If `reduce` is `'none'`,
+        `None` or `'None'`, return the full beamformed network response.
 
     Returns
     --------
-    beam: (n_sources, n_samples) numpy.ndarray, float
-        Full network response with the `n_sources` network responses
-        at each time step.
+    beam: (n_sources, n_samples) or (n_samples,) numpy.ndarray, float
+        Full network response (n_sources, n_samples) or maximum network
+        response (n_samples,). See `reduce`.
+    beam_argmax: (n_samples,) numpy.ndarray, int, optional
+        If `reduce` is `'max'`, return the maximum network response source
+        indexes.
     """
     # Load library
     lib = load_library(device)
@@ -67,7 +75,7 @@ def beamform(
     # We keep four cases separate in case the signature differs
     if device.lower() == "cpu":
 
-        if reduce is None:
+        if reduce in ['none', 'None', None]:
             beam = np.zeros(n_sources * n_samples, dtype=np.float32)
             lib.beamform(
                 waveform_features.ctypes.data_as(ct.POINTER(ct.c_float)),
