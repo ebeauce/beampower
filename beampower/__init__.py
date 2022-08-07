@@ -5,6 +5,10 @@ of beamforming, sometimes also called back-projection.
 If you have any question, don't hesitate contacting me at: 
 ebeauce@ldeo.columbia.edu
 """
-from . import beampower
 
-__version__ = '1.0.1'
+__all__ = ["load_library", "beamform"]
+
+from .core import load_library
+from .beampower import beamform
+
+__version__ = "1.0.1"
