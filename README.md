@@ -58,7 +58,7 @@ These notebooks require to install the following packages to be ran properly:
 ## To-do's
 
 - [ ] Link the doc in the `dev` branch
-- [ ] Describe the `reduce` argument in `beamform`
+- [ ] Rename package and root folder.
 - [ ] Describe `pykonal` issues with some grids
 - [ ] Compare our locs with a catalog (?)
 
