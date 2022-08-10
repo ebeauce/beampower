@@ -57,10 +57,11 @@ These notebooks require to install the following packages to be ran properly:
 
 ## To-do's
 
-- [ ] Link the doc in the `dev` branch
-- [ ] Rename package and root folder.
-- [ ] Describe `pykonal` issues with some grids
-- [ ] Compare our locs with a catalog (?)
+- [ ] Link the doc in the `dev` branch.
+- [ ] Describe `pykonal` issues with some grids (?).
+- [ ] Compare our locs with a catalog (?).
+- [ ] Reduce use of xarray and use more explicit numpy.
+- [ ] Investigate apparent issues in location.
 
 
 
