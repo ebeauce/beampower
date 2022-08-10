@@ -6,9 +6,9 @@
 
 
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
-![](https://img.shields.io/github/commit-activity/w/ebeauce/beamnetresponse)
-![](https://img.shields.io/github/last-commit/ebeauce/beamnetresponse)
-![](https://img.shields.io/github/stars/ebeauce/beamnetresponse?style=social)
+![](https://img.shields.io/github/commit-activity/w/ebeauce/beampower)
+![](https://img.shields.io/github/last-commit/ebeauce/beampower)
+![](https://img.shields.io/github/stars/ebeauce/beampower?style=social)
 
 ### About the package
 `beampower` is a package for beamforming (or backprojection) of seismic signal for event detection and location. The Python wrapper
@@ -24,7 +24,7 @@ There is no publication (yet) for this repository, but if you use it, please ack
 
 Download the repository on your computer at any location with the following command or with another GitHub repository manager
 
-    git clone https://github.com/ebeauce/beamnetresponse.git
+    git clone https://github.com/ebeauce/beampower.git
 
 Then, from the root of the repository, run the following commands:
 
