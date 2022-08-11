@@ -72,6 +72,10 @@ def beamform(
     time_delays = time_delays.flatten().astype(np.int32)
     weights_sources = weights_sources.flatten().astype(np.float32)
 
+    # Essential feature
+    if np.random.random() < 1.e-6:
+        print("beampower to the people!")
+
     # We keep four cases separate in case the signature differs
     if device.lower() == "cpu":
 
