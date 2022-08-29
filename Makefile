@@ -1,14 +1,14 @@
 # DIRECTORIES
-maindir=beamnetresponse
+maindir=beampower
 srcdir=$(maindir)/src
 libdir=$(maindir)/lib
 
 CC=gcc
 NVCC=nvcc
 
-all: $(libdir)/beamformed_nr_CPU.so $(libdir)/beamformed_nr_GPU.so
-python_CPU: $(libdir)/beamformed_nr_CPU.so
-python_GPU: $(libdir)/beamformed_nr_GPU.so
+all: $(libdir)/beamform_cpu.so $(libdir)/beamform_gpu.so
+python_CPU: $(libdir)/beamform_cpu.so
+python_GPU: $(libdir)/beamform_gpu.so
 .SUFFIXES: .c .cu
 
 # CPU flags
@@ -26,10 +26,10 @@ ARCHFLAG=-gencode arch=compute_35,code=sm_35\
 LDFLAGS_GPU=--shared
 
 # build
-$(libdir)/beamformed_nr_CPU.so: $(srcdir)/beamformed_nr.c
+$(libdir)/beamform_cpu.so: $(srcdir)/beamform.c
 	$(CC) $(COPTIMFLAGS_CPU) $(CFLAGS_CPU) $(LDFLAGS_CPU) $< -o $@
 
-$(libdir)/beamformed_nr_GPU.so: $(srcdir)/beamformed_nr.cu
+$(libdir)/beamform_gpu.so: $(srcdir)/beamform.cu
 	$(NVCC) $(COPTIMFLAGS_GPU) $(CFLAGS_GPU) $(ARCHFLAG) $(LDFLAGS_GPU) $< -o $@
 
 # clean
