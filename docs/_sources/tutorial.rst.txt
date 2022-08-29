@@ -6,9 +6,8 @@ Tutorial
    :caption: Contents:
 
    tutorial/general
-   tutorial/download_data
-   tutorial/format_data
-   tutorial/preprocessing
-   tutorial/tt_table
-   tutorial/compute_cnr
-   tutorial/show_results
+   tutorial/notebooks/0_download
+   tutorial/notebooks/1_preprocess
+   tutorial/notebooks/2_travel_times
+   tutorial/notebooks/3_localization
+

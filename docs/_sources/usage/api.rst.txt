@@ -1,7 +1,7 @@
 API
 ===
 
-.. automodule:: beamnetresponse.beamformed_nr
+.. automodule:: beampower.beampower
    :members:
    :undoc-members:
    :show-inheritance:
