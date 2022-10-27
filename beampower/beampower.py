@@ -65,10 +65,6 @@ def beamform(
     # Load library
     lib = load_library(device)
 
-    # Get shapes
-    n_stations, _, n_samples = waveform_features.shape
-    n_sources, _, n_phases = time_delays.shape
-
     # Prestack detection traces
     if np.alltrue(weights_phases == 1.0):
         waveform_features = waveform_features
@@ -77,16 +73,21 @@ def beamform(
             waveform_features, weights_phases, device="cpu"
         )
 
-    if mode == "differential":
-        # trim the cross-correlation vectors for lags
-        # between (delta tau)_min=-(delta tau)_max and +(delta tau)_max
-        dtau_max = np.abs(time_delays).max()
-        # we assume that the cross-correlation vectors have
-        # length 2N+1 and that the 0-lag is at sample N
-        zero_lag_index = waveform_features.shape[-1] // 2
-        waveform_features = waveform_features[
-            ..., zero_lag_index - dtau_max : zero_lag_index + dtau_max + 1
-        ]
+    # if mode == "differential":
+    #     # we assume that the cross-correlation vectors have
+    #     # length 2N+1 and that the 0-lag is at sample N
+    #     zero_lag_index = waveform_features.shape[-1] // 2
+    #     # trim the cross-correlation vectors for lags
+    #     # between (delta tau)_min=-(delta tau)_max and +(delta tau)_max
+    #     dtau_max = np.abs(time_delays).max()
+    #     dtau_max = min(zero_lag_index, dtau_max)
+    #     waveform_features = waveform_features[
+    #         ..., zero_lag_index - dtau_max : zero_lag_index + dtau_max + 1
+    #     ]
+
+    # Get shapes
+    n_stations, _, n_samples = waveform_features.shape
+    n_sources, _, n_phases = time_delays.shape
 
     # Get waveform features
     waveform_features = waveform_features.flatten().astype(np.float32)
@@ -171,8 +172,8 @@ def beamform(
         # We keep four cases separate in case the signature differs
         if device.lower() == "cpu":
 
-            beam = np.zeros(n_sources * n_samples, dtype=np.float32)
-            lib.beamform(
+            beam = np.zeros(n_sources, dtype=np.float32)
+            lib.beamform_differential(
                 waveform_features.ctypes.data_as(ct.POINTER(ct.c_float)),
                 time_delays.ctypes.data_as(ct.POINTER(ct.c_int)),
                 weights_sources.ctypes.data_as(ct.POINTER(ct.c_float)),
@@ -182,7 +183,6 @@ def beamform(
                 n_phases,
                 beam.ctypes.data_as(ct.POINTER(ct.c_float)),
             )
-            beam = beam.reshape(n_sources, n_samples)
 
             if reduce in ["none", "None", None]:
                 return beam
