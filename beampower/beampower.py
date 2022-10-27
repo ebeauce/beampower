@@ -13,6 +13,7 @@ def beamform(
     weights_sources,
     device="cpu",
     reduce="max",
+    mode="direct",
 ):
     """Compute the beamformed network response.
 
@@ -45,6 +46,12 @@ def beamform(
         `reduce` is `'max'`, return the maximum network response of the grid at
         each time step, as well as the source indexes. If `reduce` is `'none'`,
         `None` or `'None'`, return the full beamformed network response.
+    mode: string, default to 'direct'
+        Either 'direct' (default) or 'differential'. If 'direct', the time
+        delays are the (relative) source-receiver propagation times. If
+        'differential', the time delays are the inter-station differential
+        propagation times. The latter requires `waveform_features` to be based
+        on inter-station cross-correlations.
 
     Returns
     --------
@@ -94,7 +101,6 @@ def beamform(
             return beam.reshape(n_sources, n_samples)
 
         elif reduce == "max":
-
             beam_max = np.zeros(n_samples, dtype=np.float32)
             beam_argmax = np.zeros(n_samples, dtype=np.int32)
             lib.beamform_max(
@@ -112,7 +118,7 @@ def beamform(
 
     elif device.lower() == "gpu":
 
-        if reduce is None:
+        if reduce in ['none', 'None', None]:
             beam = np.zeros(n_sources * n_samples, dtype=np.float32)
             lib.beamform(
                 waveform_features.ctypes.data_as(ct.POINTER(ct.c_float)),
