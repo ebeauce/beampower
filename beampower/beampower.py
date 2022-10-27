@@ -70,10 +70,12 @@ def beamform(
     n_sources, _, n_phases = time_delays.shape
 
     # Prestack detection traces
-    if np.alltrue(weights_phases == 1.):
+    if np.alltrue(weights_phases == 1.0):
         waveform_features = waveform_features
     else:
-        waveform_features = prestack_traces(waveform_features, weights_phases, device="cpu")
+        waveform_features = prestack_traces(
+            waveform_features, weights_phases, device="cpu"
+        )
 
     if mode == "differential":
         # trim the cross-correlation vectors for lags
@@ -195,7 +197,7 @@ def beamform(
 
             print("differential mode not yet implemented on GPU")
             return
-        
+
     else:
         print(f"Mode should either be 'normal' or 'differential', not {mode}.")
         return 1
@@ -231,7 +233,9 @@ def prestack_traces(waveform_features, weights_phases, device="cpu"):
     # Get shapes
     n_stations, n_channels, n_samples = waveform_features.shape
     _, _, n_phases = weights_phases.shape
-    prestacked_traces = np.zeros((n_stations * n_samples * n_phases), dtype=np.float32)
+    prestacked_traces = np.zeros(
+        (n_stations * n_samples * n_phases), dtype=np.float32
+    )
 
     # Cast
     waveform_features = waveform_features.flatten().astype(np.float32)
