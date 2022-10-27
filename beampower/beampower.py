@@ -70,7 +70,10 @@ def beamform(
     n_sources, _, n_phases = time_delays.shape
 
     # Prestack detection traces
-    waveform_features = prestack_traces(waveform_features, weights_phases, device="cpu")
+    if np.alltrue(weights_phases == 1.):
+        waveform_features = waveform_features
+    else:
+        waveform_features = prestack_traces(waveform_features, weights_phases, device="cpu")
 
     if mode == "differential":
         # trim the cross-correlation vectors for lags
