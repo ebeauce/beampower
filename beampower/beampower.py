@@ -195,6 +195,10 @@ def beamform(
 
             print("differential mode not yet implemented on GPU")
             return
+        
+    else:
+        print(f"Mode should either be 'normal' or 'differential', not {mode}.")
+        return 1
 
 
 def prestack_traces(waveform_features, weights_phases, device="cpu"):
