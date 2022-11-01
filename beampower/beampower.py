@@ -65,14 +65,6 @@ def beamform(
     # Load library
     lib = load_library(device)
 
-    # Prestack detection traces
-    if np.alltrue(weights_phases == 1.0):
-        waveform_features = waveform_features
-    else:
-        waveform_features = prestack_traces(
-            waveform_features, weights_phases, device="cpu"
-        )
-
     # if mode == "differential":
     #     # we assume that the cross-correlation vectors have
     #     # length 2N+1 and that the 0-lag is at sample N
@@ -88,6 +80,14 @@ def beamform(
     # Get shapes
     n_stations, _, n_samples = waveform_features.shape
     n_sources, _, n_phases = time_delays.shape
+
+    # Prestack detection traces
+    if np.alltrue(weights_phases == 1.0):
+        waveform_features = waveform_features
+    else:
+        waveform_features = prestack_traces(
+            waveform_features, weights_phases, device="cpu"
+        )
 
     # Get waveform features
     waveform_features = waveform_features.flatten().astype(np.float32)
