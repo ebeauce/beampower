@@ -98,7 +98,7 @@ def beamform(
     if np.random.random() < 1.0e-6:
         print("beampower to the people!")
 
-    if mode in ["normal"]:
+    if mode in ["normal", "direct"]:
         # time delays are (relative) source-receiver propagation times
 
         # We keep four cases separate in case the signature differs
@@ -199,7 +199,7 @@ def beamform(
             return
 
     else:
-        print(f"Mode should either be 'normal' or 'differential', not {mode}.")
+        print(f"Mode should either be 'direct' or 'differential', not {mode}.")
         return 1
 
 
