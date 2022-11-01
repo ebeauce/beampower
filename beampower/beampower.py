@@ -82,12 +82,9 @@ def beamform(
     n_sources, _, n_phases = time_delays.shape
 
     # Prestack detection traces
-    if np.alltrue(weights_phases == 1.0):
-        waveform_features = waveform_features
-    else:
-        waveform_features = prestack_traces(
-            waveform_features, weights_phases, device="cpu"
-        )
+    waveform_features = prestack_traces(
+        waveform_features, weights_phases, device="cpu"
+    )
 
     # Get waveform features
     waveform_features = waveform_features.flatten().astype(np.float32)

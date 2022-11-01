@@ -54,7 +54,7 @@ float _beam(float *waveform_features, int *time_delays, float *weights,
      * This routine uses the detection traces prestacked for each phase. */
 
     float beam = 0.;      // shifted and stacked traces
-    size_t det_tr_offset; // position on input pointer
+    size_t feature_offset; // position on input pointer
 
     for (size_t s = 0; s < n_stations; s++)
     {
@@ -64,8 +64,8 @@ float _beam(float *waveform_features, int *time_delays, float *weights,
         for (size_t p = 0; p < n_phases; p++)
         {
             // phase loop
-            det_tr_offset = s * n_samples * n_phases + p + n_phases * time_delays[s * n_phases + p];
-            beam += weights[s] * waveform_features[det_tr_offset];
+            feature_offset = s * n_samples * n_phases + p + n_phases * time_delays[s * n_phases + p];
+            beam += weights[s] * waveform_features[feature_offset];
         }
     }
     return beam;
@@ -81,11 +81,11 @@ void prestack_waveform_features(
      * for each phase since, for a given phase, all channels of a same
      * station are always stacked with no relative time-shift. */
 
-    int prestack_offset;
-    int det_tr_offset;
-    int weight_offset;
+    size_t prestack_offset;
+    size_t feature_offset;
+    size_t weight_offset;
 
-#pragma omp parallel for private(prestack_offset, det_tr_offset, weight_offset) \
+#pragma omp parallel for private(prestack_offset, feature_offset, weight_offset) \
     shared(waveform_features, weights_phases, prestack_traces)
     for (size_t s = 0; s < n_stations; s++)
     {
@@ -103,10 +103,10 @@ void prestack_waveform_features(
                 {
                     // channel loop
                     // stack detection traces along the channel axis
-                    det_tr_offset = s * n_channels * n_samples + c * n_samples + t;
+                    feature_offset = s * n_channels * n_samples + c * n_samples + t;
                     weight_offset = s * n_channels * n_phases + c * n_phases + p;
                     prestack_traces[prestack_offset] +=
-                        weights_phases[weight_offset] * waveform_features[det_tr_offset];
+                        weights_phases[weight_offset] * waveform_features[feature_offset];
                 }
             }
         }
