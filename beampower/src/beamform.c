@@ -140,8 +140,8 @@ void beamform(float *waveform_features, int *time_delays, float *weights,
                              n_stations,
                              n_phases,
                              time_delays_minmax);
-#pragma omp parallel for private(time_delay_offset, weights_offset, beam_offset) \
-    shared(waveform_features, time_delays, beam)
+#pragma omp parallel for private(time_delay_offset, weights_offset, beam_offset, time_delay_min, time_delay_max) \
+    shared(waveform_features, time_delays, beam, time_delays_minmax)
     for (size_t i = 0; i < n_sources; i++)
     {
         time_delay_offset = i * n_stations * n_phases;
@@ -149,7 +149,7 @@ void beamform(float *waveform_features, int *time_delays, float *weights,
         beam_offset = i * n_samples;
         time_delay_min = time_delays_minmax[2 * i + 0];
         time_delay_max = time_delays_minmax[2 * i + 1];
-        for (size_t t = 0; t < n_samples; t++)
+        for (int t = 0; t < n_samples; t++)
         {
             // check out-of-bound operations
             if ((t + time_delay_max) >= n_samples)
