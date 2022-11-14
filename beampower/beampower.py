@@ -13,6 +13,7 @@ def beamform(
     weights_sources,
     device="cpu",
     reduce="max",
+    mode="direct",
 ):
     """Compute the beamformed network response.
 
@@ -45,6 +46,12 @@ def beamform(
         `reduce` is `'max'`, return the maximum network response of the grid at
         each time step, as well as the source indexes. If `reduce` is `'none'`,
         `None` or `'None'`, return the full beamformed network response.
+    mode: string, default to 'direct'
+        Either 'direct' (default) or 'differential'. If 'direct', the time
+        delays are the (relative) source-receiver propagation times. If
+        'differential', the time delays are the inter-station differential
+        propagation times. The latter requires `waveform_features` to be based
+        on inter-station cross-correlations.
 
     Returns
     --------
@@ -57,6 +64,18 @@ def beamform(
     """
     # Load library
     lib = load_library(device)
+
+    # if mode == "differential":
+    #     # we assume that the cross-correlation vectors have
+    #     # length 2N+1 and that the 0-lag is at sample N
+    #     zero_lag_index = waveform_features.shape[-1] // 2
+    #     # trim the cross-correlation vectors for lags
+    #     # between (delta tau)_min=-(delta tau)_max and +(delta tau)_max
+    #     dtau_max = np.abs(time_delays).max()
+    #     dtau_max = min(zero_lag_index, dtau_max)
+    #     waveform_features = waveform_features[
+    #         ..., zero_lag_index - dtau_max : zero_lag_index + dtau_max + 1
+    #     ]
 
     # Get shapes
     n_stations, _, n_samples = waveform_features.shape
@@ -73,15 +92,85 @@ def beamform(
     weights_sources = weights_sources.flatten().astype(np.float32)
 
     # Essential feature
-    if np.random.random() < 1.e-6:
+    if np.random.random() < 1.0e-6:
         print("beampower to the people!")
 
-    # We keep four cases separate in case the signature differs
-    if device.lower() == "cpu":
+    if mode in ["normal", "direct"]:
+        # time delays are (relative) source-receiver propagation times
 
-        if reduce in ['none', 'None', None]:
-            beam = np.zeros(n_sources * n_samples, dtype=np.float32)
-            lib.beamform(
+        # We keep four cases separate in case the signature differs
+        if device.lower() == "cpu":
+
+            if reduce in ["none", "None", None]:
+                beam = np.zeros(n_sources * n_samples, dtype=np.float32)
+                lib.beamform(
+                    waveform_features.ctypes.data_as(ct.POINTER(ct.c_float)),
+                    time_delays.ctypes.data_as(ct.POINTER(ct.c_int)),
+                    weights_sources.ctypes.data_as(ct.POINTER(ct.c_float)),
+                    n_samples,
+                    n_sources,
+                    n_stations,
+                    n_phases,
+                    beam.ctypes.data_as(ct.POINTER(ct.c_float)),
+                )
+                return beam.reshape(n_sources, n_samples)
+
+            elif reduce == "max":
+                beam_max = np.zeros(n_samples, dtype=np.float32)
+                beam_argmax = np.zeros(n_samples, dtype=np.int32)
+                lib.beamform_max(
+                    waveform_features.ctypes.data_as(ct.POINTER(ct.c_float)),
+                    time_delays.ctypes.data_as(ct.POINTER(ct.c_int)),
+                    weights_sources.ctypes.data_as(ct.POINTER(ct.c_float)),
+                    n_samples,
+                    n_sources,
+                    n_stations,
+                    n_phases,
+                    beam_max.ctypes.data_as(ct.POINTER(ct.c_float)),
+                    beam_argmax.ctypes.data_as(ct.POINTER(ct.c_int)),
+                )
+                return beam_max, beam_argmax
+
+        elif device.lower() == "gpu":
+
+            if reduce in ["none", "None", None]:
+                beam = np.zeros(n_sources * n_samples, dtype=np.float32)
+                lib.beamform(
+                    waveform_features.ctypes.data_as(ct.POINTER(ct.c_float)),
+                    time_delays.ctypes.data_as(ct.POINTER(ct.c_int)),
+                    weights_sources.ctypes.data_as(ct.POINTER(ct.c_float)),
+                    n_samples,
+                    n_sources,
+                    n_stations,
+                    n_phases,
+                    beam.ctypes.data_as(ct.POINTER(ct.c_float)),
+                )
+                return beam.reshape(n_sources, n_samples)
+
+            elif reduce == "max":
+                beam_max = np.zeros(n_samples, dtype=np.float32)
+                beam_argmax = np.zeros(n_samples, dtype=np.int32)
+                lib.beamform_max(
+                    waveform_features.ctypes.data_as(ct.POINTER(ct.c_float)),
+                    time_delays.ctypes.data_as(ct.POINTER(ct.c_int)),
+                    weights_sources.ctypes.data_as(ct.POINTER(ct.c_float)),
+                    n_samples,
+                    n_sources,
+                    n_stations,
+                    n_phases,
+                    beam_max.ctypes.data_as(ct.POINTER(ct.c_float)),
+                    beam_argmax.ctypes.data_as(ct.POINTER(ct.c_int)),
+                )
+                return beam_max, beam_argmax
+
+    if mode == "differential":
+        # time delays are (relative) source-receiver propagation times
+
+        # We keep four cases separate in case the signature differs
+        if device.lower() == "cpu":
+
+            beam = np.zeros(n_sources, dtype=np.float32)
+            lib.beamform_differential(
                 waveform_features.ctypes.data_as(ct.POINTER(ct.c_float)),
                 time_delays.ctypes.data_as(ct.POINTER(ct.c_int)),
                 weights_sources.ctypes.data_as(ct.POINTER(ct.c_float)),
@@ -91,56 +180,24 @@ def beamform(
                 n_phases,
                 beam.ctypes.data_as(ct.POINTER(ct.c_float)),
             )
-            return beam.reshape(n_sources, n_samples)
 
-        elif reduce == "max":
+            if reduce in ["none", "None", None]:
+                return beam
+            elif reduce == "max":
+                beam_max = np.max(beam, axis=0)
+                beam_argmax = np.argmax(beam, axis=0)
+                return beam_max, beam_argmax
 
-            beam_max = np.zeros(n_samples, dtype=np.float32)
-            beam_argmax = np.zeros(n_samples, dtype=np.int32)
-            lib.beamform_max(
-                waveform_features.ctypes.data_as(ct.POINTER(ct.c_float)),
-                time_delays.ctypes.data_as(ct.POINTER(ct.c_int)),
-                weights_sources.ctypes.data_as(ct.POINTER(ct.c_float)),
-                n_samples,
-                n_sources,
-                n_stations,
-                n_phases,
-                beam_max.ctypes.data_as(ct.POINTER(ct.c_float)),
-                beam_argmax.ctypes.data_as(ct.POINTER(ct.c_int)),
-            )
-            return beam_max, beam_argmax
+                return beam.reshape(n_sources, n_samples)
 
-    elif device.lower() == "gpu":
+        elif device.lower() == "gpu":
 
-        if reduce is None:
-            beam = np.zeros(n_sources * n_samples, dtype=np.float32)
-            lib.beamform(
-                waveform_features.ctypes.data_as(ct.POINTER(ct.c_float)),
-                time_delays.ctypes.data_as(ct.POINTER(ct.c_int)),
-                weights_sources.ctypes.data_as(ct.POINTER(ct.c_float)),
-                n_samples,
-                n_sources,
-                n_stations,
-                n_phases,
-                beam.ctypes.data_as(ct.POINTER(ct.c_float)),
-            )
-            return beam.reshape(n_sources, n_samples)
+            print("differential mode not yet implemented on GPU")
+            return
 
-        elif reduce == "max":
-            beam_max = np.zeros(n_samples, dtype=np.float32)
-            beam_argmax = np.zeros(n_samples, dtype=np.int32)
-            lib.beamform_max(
-                waveform_features.ctypes.data_as(ct.POINTER(ct.c_float)),
-                time_delays.ctypes.data_as(ct.POINTER(ct.c_int)),
-                weights_sources.ctypes.data_as(ct.POINTER(ct.c_float)),
-                n_samples,
-                n_sources,
-                n_stations,
-                n_phases,
-                beam_max.ctypes.data_as(ct.POINTER(ct.c_float)),
-                beam_argmax.ctypes.data_as(ct.POINTER(ct.c_int)),
-            )
-            return beam_max, beam_argmax
+    else:
+        print(f"Mode should either be 'direct' or 'differential', not {mode}.")
+        return 1
 
 
 def prestack_traces(waveform_features, weights_phases, device="cpu"):
