@@ -1,132 +1,99 @@
-
 <!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
-<html lang="en">
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
-
-    <title>0. Download seismograms &#8212; beampower 1.0.1 documentation</title>
-    <link rel="stylesheet" href="../../_static/basic.css" type="text/css" />
-    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
-    <link rel="stylesheet" type="text/css" href="../../_static/insipid.css" />
-
-    <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
-    <script src="../../_static/jquery.js"></script>
-    <script src="../../_static/underscore.js"></script>
-    <script src="../../_static/_sphinx_javascript_frameworks_compat.js"></script>
-    <script src="../../_static/doctools.js"></script>
-    <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
-    <script>window.MathJax = {"tex": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true}, "options": {"ignoreHtmlClass": "tex2jax_ignore|mathjax_ignore|document", "processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
-    <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
-    <script defer src="../../_static/insipid.js"></script>
-    <script defer src="../../_static/insipid-sidebar.js"></script>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>0. Download seismograms &mdash; beampower 1.0.1 documentation</title>
+      <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
+        <script src="../../_static/jquery.js"></script>
+        <script src="../../_static/underscore.js"></script>
+        <script src="../../_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="../../_static/doctools.js"></script>
+        <script src="../../_static/sphinx_highlight.js"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+        <script>window.MathJax = {"tex": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true}, "options": {"ignoreHtmlClass": "tex2jax_ignore|mathjax_ignore|document", "processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+        <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script src="../../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
     <link rel="next" title="1. Preprocess seismic waveforms" href="1_preprocess.html" />
-    <link rel="prev" title="Pre-requisites" href="../general.html" />
-    <meta name="mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-  </head><body>
-    <script type="text/javascript">
-        document.body.classList.add('js');
-    </script>
-    <input type="checkbox" id="sidebar-checkbox" style="display: none;">
-    <label id="overlay" for="sidebar-checkbox"></label>
-    <div class="sidebar-resize-handle"></div>
-    <script type="text/javascript">
-        try {
-            let sidebar = localStorage.getItem('sphinx-sidebar');
-            const sidebar_width = localStorage.getItem('sphinx-sidebar-width');
-            if (sidebar_width) {
-                document.documentElement.style.setProperty('--sidebar-width', sidebar_width);
-            }
-            // show sidebar on wide screen
-            if (!sidebar && window.matchMedia('(min-width: 100rem)').matches) {
-                sidebar = 'visible';
-                // NB: We don't store the value in localStorage!
-            }
-            if (sidebar === 'visible') {
-                document.getElementById('sidebar-checkbox').checked = true;
-            }
-        } catch(e) {
-            console.info(e);
-        }
-    </script>
-    <header id="topbar-placeholder">
-      <div id="topbar">
-        <div id="titlebar">
-          <div class="buttons">
-            <label for="sidebar-checkbox" id="sidebar-button" role="button" tabindex="0" aria-controls="sphinxsidebar" accesskey="M">
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!-- Font Awesome Free 5.15.4 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) --><path d="M16 132h416c8.837 0 16-7.163 16-16V76c0-8.837-7.163-16-16-16H16C7.163 60 0 67.163 0 76v40c0 8.837 7.163 16 16 16zm0 160h416c8.837 0 16-7.163 16-16v-40c0-8.837-7.163-16-16-16H16c-8.837 0-16 7.163-16 16v40c0 8.837 7.163 16 16 16zm0 160h416c8.837 0 16-7.163 16-16v-40c0-8.837-7.163-16-16-16H16c-8.837 0-16 7.163-16 16v40c0 8.837 7.163 16 16 16z"/></svg>
-            </label>
-            <button id="search-button" type="button" title="Search" aria-label="Search" aria-expanded="false" aria-controls="search-form" accesskey="S">
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!-- Font Awesome Free 5.15.4 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) --><path d="M505 442.7L405.3 343c-4.5-4.5-10.6-7-17-7H372c27.6-35.3 44-79.7 44-128C416 93.1 322.9 0 208 0S0 93.1 0 208s93.1 208 208 208c48.3 0 92.7-16.4 128-44v16.3c0 6.4 2.5 12.5 7 17l99.7 99.7c9.4 9.4 24.6 9.4 33.9 0l28.3-28.3c9.4-9.4 9.4-24.6.1-34zM208 336c-70.7 0-128-57.2-128-128 0-70.7 57.2-128 128-128 70.7 0 128 57.2 128 128 0 70.7-57.2 128-128 128z"/></svg>
-            </button>
-          </div>
-          <div class="title">
-            <a class="parent" href="../../tutorial.html" accesskey="U">Tutorial</a>
-            <a class="top" href="#">0. Download seismograms</a>
-          </div>
-          <div class="buttons">
-            <button id="fullscreen-button" type="button" aria-hidden="true">
-              <span class="enable">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!-- Font Awesome Free 5.15.4 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) --><path d="M212.686 315.314L120 408l32.922 31.029c15.12 15.12 4.412 40.971-16.97 40.971h-112C10.697 480 0 469.255 0 456V344c0-21.382 25.803-32.09 40.922-16.971L72 360l92.686-92.686c6.248-6.248 16.379-6.248 22.627 0l25.373 25.373c6.249 6.248 6.249 16.378 0 22.627zm22.628-118.628L328 104l-32.922-31.029C279.958 57.851 290.666 32 312.048 32h112C437.303 32 448 42.745 448 56v112c0 21.382-25.803 32.09-40.922 16.971L376 152l-92.686 92.686c-6.248 6.248-16.379 6.248-22.627 0l-25.373-25.373c-6.249-6.248-6.249-16.378 0-22.627z"/></svg>
-              </span>
-              <span class="disable">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!-- Font Awesome Free 5.15.4 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) --><path d="M4.686 427.314L104 328l-32.922-31.029C55.958 281.851 66.666 256 88.048 256h112C213.303 256 224 266.745 224 280v112c0 21.382-25.803 32.09-40.922 16.971L152 376l-99.314 99.314c-6.248 6.248-16.379 6.248-22.627 0L4.686 449.941c-6.248-6.248-6.248-16.379 0-22.627zM443.314 84.686L344 184l32.922 31.029c15.12 15.12 4.412 40.971-16.97 40.971h-112C234.697 256 224 245.255 224 232V120c0-21.382 25.803-32.09 40.922-16.971L296 136l99.314-99.314c6.248-6.248 16.379-6.248 22.627 0l25.373 25.373c6.248 6.248 6.248 16.379 0 22.627z"/></svg>
-              </span>
-            </button>
-          </div>
-        </div>
-        <div id="searchbox" role="search">
-          <form id="search-form" class="search" style="display: none" action="../../search.html" method="get">
-            <input type="search" name="q" placeholder="Search ..." autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" />
-            <button>Go</button>
-          </form>
+    <link rel="prev" title="Pre-requisites" href="../general.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../index.html" class="icon icon-home"> beampower
+            <img src="../../_static/logo.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../introduction.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../usage.html">Usage</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../../tutorial.html">Tutorial</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../general.html">Pre-requisites</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">0. Download seismograms</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#Dataset-information">Dataset information</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#Contents-of-this-notebook">Contents of this notebook</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#Download-destination-path">Download destination path</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#Prepare-the-data-downloader">Prepare the data downloader</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#Download-the-data">Download the data</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#Show-inventory">Show inventory</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="1_preprocess.html">1. Preprocess seismic waveforms</a></li>
+<li class="toctree-l2"><a class="reference internal" href="2_travel_times.html">2. Compute travel times</a></li>
+<li class="toctree-l2"><a class="reference internal" href="3_localization.html">3. Beamforming for location</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../updates.html">Updates</a></li>
+</ul>
+
         </div>
       </div>
-    </header>
-    <nav>
-      <a href="../general.html" class="nav-icon previous" title="previous:&#13;Pre-requisites" aria-label="Previous topic" accesskey="P" tabindex="-1">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 512"><!-- Font Awesome Free 5.15.4 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) --><path d="M31.7 239l136-136c9.4-9.4 24.6-9.4 33.9 0l22.6 22.6c9.4 9.4 9.4 24.6 0 33.9L127.9 256l96.4 96.4c9.4 9.4 9.4 24.6 0 33.9L201.7 409c-9.4 9.4-24.6 9.4-33.9 0l-136-136c-9.5-9.4-9.5-24.6-.1-34z"/></svg>
-      </a>
-      <a href="1_preprocess.html" class="nav-icon next" title="next:&#13;1. Preprocess seismic waveforms" aria-label="Next topic" accesskey="N" tabindex="-1">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 512"><!-- Font Awesome Free 5.15.4 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) --><path d="M224.3 273l-136 136c-9.4 9.4-24.6 9.4-33.9 0l-22.6-22.6c-9.4-9.4-9.4-24.6 0-33.9l96.4-96.4-96.4-96.4c-9.4-9.4-9.4-24.6 0-33.9L54.3 103c9.4-9.4 24.6-9.4 33.9 0l136 136c9.5 9.4 9.5 24.6.1 34z"/></svg>
-      </a>
     </nav>
 
-    <nav class="relbar">
-      <a class="previous" href="../general.html" aria-label="Previous topic" >
-        <div class="icon">
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!-- Font Awesome Free 5.15.4 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) --><path d="M257.5 445.1l-22.2 22.2c-9.4 9.4-24.6 9.4-33.9 0L7 273c-9.4-9.4-9.4-24.6 0-33.9L201.4 44.7c9.4-9.4 24.6-9.4 33.9 0l22.2 22.2c9.5 9.5 9.3 25-.4 34.3L136.6 216H424c13.3 0 24 10.7 24 24v32c0 13.3-10.7 24-24 24H136.6l120.5 114.8c9.8 9.3 10 24.8.4 34.3z"/></svg>
-        </div>
-        <div class="title">
-          <span class="text">
-            <span class="direction">previous</span>
-            Pre-requisites
-          </span>
-        </div>
-      </a>
-      <a class="next" href="1_preprocess.html" aria-label="Next topic" >
-        <div class="title">
-          <span class="text">
-            <span class="direction">next</span>
-            1. Preprocess seismic waveforms
-          </span>
-        </div>
-        <div class="icon">
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!-- Font Awesome Free 5.15.4 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) --><path d="M190.5 66.9l22.2-22.2c9.4-9.4 24.6-9.4 33.9 0L441 239c9.4 9.4 9.4 24.6 0 33.9L246.6 467.3c-9.4 9.4-24.6 9.4-33.9 0l-22.2-22.2c-9.5-9.5-9.3-25 .4-34.3L311.4 296H24c-13.3 0-24-10.7-24-24v-32c0-13.3 10.7-24 24-24h287.4L190.9 101.2c-9.8-9.3-10-24.8-.4-34.3z"/></svg>
-        </div>
-      </a>
-    </nav>  
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">beampower</a>
+      </nav>
 
-    <div class="document">
-      <div class="documentwrapper">
-        <div class="bodywrapper">
-          <div class="body" role="main">
-            
-
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home"></a></li>
+          <li class="breadcrumb-item"><a href="../../tutorial.html">Tutorial</a></li>
+      <li class="breadcrumb-item active">0. Download seismograms</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../../_sources/tutorial/notebooks/0_download.ipynb.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  
 <style>
 /* CSS for nbsphinx extension */
 
@@ -381,9 +348,31 @@ div.rendered_html tbody tr:nth-child(odd) {
 div.rendered_html tbody tr:hover {
   background: rgba(66, 165, 245, 0.2);
 }
+
+/* CSS overrides for sphinx_rtd_theme */
+
+/* 24px margin */
+.nbinput.nblast.container,
+.nboutput.nblast.container {
+    margin-bottom: 19px;  /* padding has already 5px */
+}
+
+/* ... except between code cells! */
+.nblast.container + .nbinput.container {
+    margin-top: -19px;
+}
+
+.admonition > p:before {
+    margin-right: 4px;  /* make room for the exclamation icon */
+}
+
+/* Fix math alignment, see https://github.com/rtfd/sphinx_rtd_theme/pull/686 */
+.math {
+    text-align: unset;
+}
 </style>
 <section id="0.-Download-seismograms">
-<h1>0. Download seismograms<a class="headerlink" href="#0.-Download-seismograms" title="Permalink to this heading">¶</a></h1>
+<h1>0. Download seismograms<a class="headerlink" href="#0.-Download-seismograms" title="Permalink to this heading"></a></h1>
 <p>This tutorial uses a small dataset for earthquake detection and location from continuous data. The dataset consists of one day of data from eight broadband seismic stations with three components in the North Anatolian Fault Zone.</p>
 <p>In the present notebook, we download the continuous dataset and save it for later use. We process the recordings from 2013-04-23 when a magnitude 3.3 earthquake nucleated in the middle of the seismic array at 7 km depth. You can find information about this earthquake on the <a class="reference external" href="http://www.isc.ac.uk/cgi-bin/web-db-run?request=COMPREHENSIVE&amp;out_format=CATCSV&amp;searchshape=RECT&amp;bot_lat=40.60&amp;top_lat=40.76&amp;left_lon=30.20&amp;right_lon=30.45&amp;ctr_lat=&amp;ctr_lon=&amp;radius=&amp;max_dist_units=deg&amp;srn=&amp;grn=&amp;start_year=2012&amp;start_month=1&amp;start_day=23&amp;start_time=00%3A00%3A00&amp;end_year=2013&amp;end_month=7&amp;end_day=01&amp;end_time=00%3A00%3A00&amp;min_dep=&amp;max_dep=&amp;min_mag=3&amp;max_mag=&amp;req_mag_type=Any&amp;req_mag_agcy=&amp;include_links=on">international seismological center event
 page</a>.</p>
@@ -391,8 +380,12 @@ page</a>.</p>
 <div><p><strong>Note:</strong> this notebook uses <code class="docutils literal notranslate"><span class="pre">mass_downloader</span></code> of <code class="docutils literal notranslate"><span class="pre">obspy</span></code> to find and download the data from the IRIS data center. The download duration can vary depending on your location, do not hesitate to consider another dataset that would suit you better. A more extensive tutorial about the mass downloader is available in the <a class="reference external" href="https://docs.obspy.org/packages/autogen/obspy.clients.fdsn.mass_downloader.html">obspy documentation</a>.</p>
 </div></blockquote>
 <section id="Dataset-information">
-<h2>Dataset information<a class="headerlink" href="#Dataset-information" title="Permalink to this heading">¶</a></h2>
+<h2>Dataset information<a class="headerlink" href="#Dataset-information" title="Permalink to this heading"></a></h2>
 <table class="docutils align-default">
+<colgroup>
+<col style="width: 30%" />
+<col style="width: 70%" />
+</colgroup>
 <thead>
 <tr class="row-odd"><th class="head"><p>Dataset info</p></th>
 <th class="head"><p>Value</p></th>
@@ -424,7 +417,7 @@ page</a>.</p>
 </table>
 </section>
 <section id="Contents-of-this-notebook">
-<h2>Contents of this notebook<a class="headerlink" href="#Contents-of-this-notebook" title="Permalink to this heading">¶</a></h2>
+<h2>Contents of this notebook<a class="headerlink" href="#Contents-of-this-notebook" title="Permalink to this heading"></a></h2>
 <ul class="simple">
 <li><p><a class="reference external" href="#download-destination-path">Destination path</a></p></li>
 <li><p><a class="reference external" href="#prepare-the-downloader">Download preparation</a></p></li>
@@ -445,7 +438,7 @@ page</a>.</p>
 </div>
 </div>
 <section id="Download-destination-path">
-<h3>Download destination path<a class="headerlink" href="#Download-destination-path" title="Permalink to this heading">¶</a></h3>
+<h3>Download destination path<a class="headerlink" href="#Download-destination-path" title="Permalink to this heading"></a></h3>
 <p>By default, the package comes with a <code class="docutils literal notranslate"><span class="pre">data/</span></code> folder which can be used to store the downloaded waveforms. Please, do not include the downloaded data if you contribute to <code class="docutils literal notranslate"><span class="pre">beampower</span></code> on Github. The <code class="docutils literal notranslate"><span class="pre">.mseed</span></code> extension is included in the <code class="docutils literal notranslate"><span class="pre">.gitignore</span></code> file; if you download any other data format, please update <code class="docutils literal notranslate"><span class="pre">.gitignore</span></code> accordingly. Feel free to change it to any convenient path of your choice.</p>
 <div class="nbinput nblast docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[4]:
@@ -466,10 +459,10 @@ page</a>.</p>
 </div>
 </section>
 <section id="Prepare-the-data-downloader">
-<h3>Prepare the data downloader<a class="headerlink" href="#Prepare-the-data-downloader" title="Permalink to this heading">¶</a></h3>
+<h3>Prepare the data downloader<a class="headerlink" href="#Prepare-the-data-downloader" title="Permalink to this heading"></a></h3>
 <p>Here, we define the geographical domain and other restrictions such as data quality and temporal coverage for the data download.</p>
 <section id="Geographical-domain">
-<h4>Geographical domain<a class="headerlink" href="#Geographical-domain" title="Permalink to this heading">¶</a></h4>
+<h4>Geographical domain<a class="headerlink" href="#Geographical-domain" title="Permalink to this heading"></a></h4>
 <p>We restrict the data download to the North Anatolian domain using the <code class="docutils literal notranslate"><span class="pre">RectangularDomain</span></code> function.</p>
 <div class="nbinput nblast docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[6]:
@@ -486,7 +479,7 @@ page</a>.</p>
 </div>
 </section>
 <section id="Temporal-domain-and-quality-restrictions">
-<h4>Temporal domain and quality restrictions<a class="headerlink" href="#Temporal-domain-and-quality-restrictions" title="Permalink to this heading">¶</a></h4>
+<h4>Temporal domain and quality restrictions<a class="headerlink" href="#Temporal-domain-and-quality-restrictions" title="Permalink to this heading"></a></h4>
 <p>We restrict the data download to the eight seismic stations on <code class="docutils literal notranslate"><span class="pre">HH</span></code> or <code class="docutils literal notranslate"><span class="pre">BH</span></code> channels with continuous data on 2013-04-23 using the <code class="docutils literal notranslate"><span class="pre">Restrictions</span></code> function.</p>
 <div class="nbinput nblast docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[7]:
@@ -511,7 +504,7 @@ page</a>.</p>
 </section>
 </section>
 <section id="Download-the-data">
-<h3>Download the data<a class="headerlink" href="#Download-the-data" title="Permalink to this heading">¶</a></h3>
+<h3>Download the data<a class="headerlink" href="#Download-the-data" title="Permalink to this heading"></a></h3>
 <p>The download can take up to several minutes depending on your internet connection and machine. You may need to run the following cell several times to make sure all data were correctly downloaded; data requests to data centers may fail due to intermittent problems on their servers.</p>
 <div class="nbinput docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[10]:
@@ -578,7 +571,7 @@ page</a>.</p>
 </div>
 </section>
 <section id="Show-inventory">
-<h3>Show inventory<a class="headerlink" href="#Show-inventory" title="Permalink to this heading">¶</a></h3>
+<h3>Show inventory<a class="headerlink" href="#Show-inventory" title="Permalink to this heading"></a></h3>
 <p>The following shows the locations of the seismic stations that recorded the previously requested data. The inventory contains all metadata related to a given <code class="docutils literal notranslate"><span class="pre">seed_id</span></code>. Please check <a class="reference external" href="https://docs.obspy.org/master/packages/autogen/obspy.core.inventory.inventory.Inventory.plot.html">this obspy tutorial</a> for more information.</p>
 <div class="nbinput docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[9]:
@@ -628,75 +621,35 @@ page</a>.</p>
 </section>
 </section>
 
-            <div class="clearer"></div>
+
+           </div>
           </div>
-        </div>
-      </div>
-      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
-        <div class="sphinxsidebarwrapper">
-
-            <p class="logo"><a href="../../index.html">
-              <img class="logo" src="../../_static/logo.png" alt="Logo"/>
-            </a></p>
-          <div class="sidebar-resize-handle"></div>
-
-<h3><a href="../../index.html">Table of Contents</a></h3>
-<p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
-<ul class="current">
-<li class="toctree-l1"><a class="reference internal" href="../../introduction.html">Introduction</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../usage.html">Usage</a></li>
-<li class="toctree-l1 current"><a class="reference internal" href="../../tutorial.html">Tutorial</a><ul class="current">
-<li class="toctree-l2"><a class="reference internal" href="../general.html">Pre-requisites</a></li>
-<li class="toctree-l2 current"><a class="current reference internal" href="#">0. Download seismograms</a></li>
-<li class="toctree-l2"><a class="reference internal" href="1_preprocess.html">1. Preprocess seismic waveforms</a></li>
-<li class="toctree-l2"><a class="reference internal" href="2_travel_times.html">2. Compute travel times</a></li>
-<li class="toctree-l2"><a class="reference internal" href="3_localization.html">3. Beamforming for location</a></li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="../../updates.html">Updates</a></li>
-</ul>
-
-<hr class="docutils" />
-<ul>
-  <li class="toctree-l1"><a class="reference internal" href="../../genindex.html" accesskey="I">General Index</a></li>
-  <li class="toctree-l1"><a class="reference internal" href="../../py-modindex.html">Python Module Index</a></li>
-</ul>
-<div id="ethical-ad-placement"></div>
-        </div>
-      </div>
-      <div class="clearer"></div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="../general.html" class="btn btn-neutral float-left" title="Pre-requisites" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="1_preprocess.html" class="btn btn-neutral float-right" title="1. Preprocess seismic waveforms" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
-    <nav class="relbar">
-      <a class="previous" href="../general.html" aria-label="Previous topic" >
-        <div class="icon">
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!-- Font Awesome Free 5.15.4 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) --><path d="M257.5 445.1l-22.2 22.2c-9.4 9.4-24.6 9.4-33.9 0L7 273c-9.4-9.4-9.4-24.6 0-33.9L201.4 44.7c9.4-9.4 24.6-9.4 33.9 0l22.2 22.2c9.5 9.5 9.3 25-.4 34.3L136.6 216H424c13.3 0 24 10.7 24 24v32c0 13.3-10.7 24-24 24H136.6l120.5 114.8c9.8 9.3 10 24.8.4 34.3z"/></svg>
-        </div>
-        <div class="title">
-          <span class="text">
-            <span class="direction">previous</span>
-            Pre-requisites
-          </span>
-        </div>
-      </a>
-      <a class="next" href="1_preprocess.html" aria-label="Next topic" >
-        <div class="title">
-          <span class="text">
-            <span class="direction">next</span>
-            1. Preprocess seismic waveforms
-          </span>
-        </div>
-        <div class="icon">
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!-- Font Awesome Free 5.15.4 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) --><path d="M190.5 66.9l22.2-22.2c9.4-9.4 24.6-9.4 33.9 0L441 239c9.4 9.4 9.4 24.6 0 33.9L246.6 467.3c-9.4 9.4-24.6 9.4-33.9 0l-22.2-22.2c-9.5-9.5-9.3-25 .4-34.3L311.4 296H24c-13.3 0-24-10.7-24-24v-32c0-13.3 10.7-24 24-24h287.4L190.9 101.2c-9.8-9.3-10-24.8-.4-34.3z"/></svg>
-        </div>
-      </a>
-    </nav>
+  <hr/>
 
-    <footer role="contentinfo">
-      &#169; Copyright 2022, Eric Beauce, William B. Frank and Leonard Seydoux.
-      Created using <a class="reference external" href="https://www.sphinx-doc.org/">Sphinx</a> 5.1.1.
-      <a class="reference external" href="https://insipid-sphinx-theme.readthedocs.io/">Insipid Theme</a>.
-<a class="reference internal" href="../../_sources/tutorial/notebooks/0_download.ipynb.txt" rel="nofollow">Show Source</a>.
-    </footer>
-  </body>
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, Eric Beauce, William B. Frank and Leonard Seydoux.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
 </html>

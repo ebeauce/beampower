@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Example &mdash; beampower 1.0.1 documentation</title>
+  <title>0. Download data &mdash; beampower 1.0.1 documentation</title>
       <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
   <!--[if lt IE 9]>
@@ -20,9 +20,7 @@
         <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
     <script src="../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
-    <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="API" href="api.html" />
-    <link rel="prev" title="Usage" href="../usage.html" /> 
+    <link rel="search" title="Search" href="../search.html" /> 
 </head>
 
 <body class="wy-body-for-nav"> 
@@ -42,13 +40,9 @@
 </div>
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
               <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
-<ul class="current">
+<ul>
 <li class="toctree-l1"><a class="reference internal" href="../introduction.html">Introduction</a></li>
-<li class="toctree-l1 current"><a class="reference internal" href="../usage.html">Usage</a><ul class="current">
-<li class="toctree-l2 current"><a class="current reference internal" href="#">Example</a></li>
-<li class="toctree-l2"><a class="reference internal" href="api.html">API</a></li>
-</ul>
-</li>
+<li class="toctree-l1"><a class="reference internal" href="../usage.html">Usage</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../tutorial.html">Tutorial</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../updates.html">Updates</a></li>
 </ul>
@@ -67,10 +61,9 @@
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
       <li><a href="../index.html" class="icon icon-home"></a></li>
-          <li class="breadcrumb-item"><a href="../usage.html">Usage</a></li>
-      <li class="breadcrumb-item active">Example</li>
+      <li class="breadcrumb-item active">0. Download data</li>
       <li class="wy-breadcrumbs-aside">
-            <a href="../_sources/usage/example.rst.txt" rel="nofollow"> View page source</a>
+            <a href="../_sources/tutorial_v0/download_data.rst.txt" rel="nofollow"> View page source</a>
       </li>
   </ul>
   <hr/>
@@ -102,18 +95,56 @@
     text-align: unset;
 }
 </style>
-<section id="example">
-<h1>Example<a class="headerlink" href="#example" title="Permalink to this heading"></a></h1>
-<p>Work-in-progress</p>
+<section id="download-data">
+<h1>0. Download data<a class="headerlink" href="#download-data" title="Permalink to this heading"></a></h1>
+<p>First of all, we need to download the continuous recordings of the ground motion that we will use in this tutorial. For this, run the first script named <cite>0_download_data.py</cite>. From the <cite>scripts</cite> folder, run:</p>
+<p>#.. code-block:: console
+#
+#    $ ipython 0_download_data.py
+#
+#This script fetches the data of BH and HH seismometers of the DANA and KOERI networks from the IRIS data center. These seismometers are located along the western section of the North Anatolian Fault.
+#
+#.. code-block:: python
+#
+#    import os
+#
+#    path_script = os.path.dirname(__file__)
+#
+#    from obspy.clients.fdsn import Client
+#    from obspy import UTCDateTime as udt
+#
+#    path_data = os.path.join(path_script, os.pardir, ‘data’)
+#    if not os.path.isdir(path_data):
+#        print(f’Creating a new data folder at {path_data}’)
+#        os.mkdir(path_data)
+#
+#    client = Client(“IRIS”)
+#
+#    network = ‘YH’
+#    loc = ‘*’
+#    channel = ‘BH*,HH*’
+#
+#    starttime = udt(‘2012-07-26’)
+#    endtime = udt(‘2012-07-27’)
+#
+#    station_list = [‘SAUV’, ‘SPNC’, ‘DC08’, ‘DC07’, ‘DC06’, ‘DD06’, ‘DE07’, ‘DE08’]
+#
+#    for sta in station_list:
+#        print(f’Trying to download data from {sta}…’)
+#        st = client.get_waveforms(
+#                network, sta, loc, channel, starttime, endtime)
+#        for tr in st:
+#            inv = client.get_stations(
+#                    network=network, station=sta, starttime=starttime, endtime=endtime,
+#                    channel=tr.stats.channel, level=’response’)
+#            tr.write(os.path.join(path_data, tr.id+’.mseed’), format=’mseed’)
+#            inv.write(os.path.join(path_data, tr.id+’.xml’), format=’STATIONXML’)</p>
 </section>
 
 
            </div>
           </div>
-          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
-        <a href="../usage.html" class="btn btn-neutral float-left" title="Usage" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
-        <a href="api.html" class="btn btn-neutral float-right" title="API" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
-    </div>
+          <footer>
 
   <hr/>
 
