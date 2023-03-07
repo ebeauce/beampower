@@ -303,6 +303,7 @@ void beamform_max(float* waveform_features, int* time_delays, float* weights,
         cudaFree(time_delays_d);
         cudaFree(time_delays_minmax_d);
         cudaFree(weights_d);
+        cudaFree(beam_d);
         cudaFree(beam_max_d);
         cudaFree(source_index_beam_max_d);
 
