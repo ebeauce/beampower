@@ -14,6 +14,7 @@ def beamform(
     device="cpu",
     reduce="max",
     mode="direct",
+    out_of_bounds="strict"
 ):
     """Compute the beamformed network response.
 
@@ -62,6 +63,15 @@ def beamform(
         If `reduce` is `'max'`, return the maximum network response source
         indexes.
     """
+    if out_of_bounds not in ["strict", "flexible"]:
+        print("out_of_bounds should be either of 'strict' or 'flexible',"
+                f" not {out_of_bounds}")
+        return
+    elif out_of_bounds == "strict":
+        out_of_bounds = 0
+    elif out_of_bounds == "flexible":
+        out_of_bounds = 1
+
     # Load library
     lib = load_library(device)
 
@@ -111,6 +121,7 @@ def beamform(
                     n_sources,
                     n_stations,
                     n_phases,
+                    int(out_of_bounds),
                     beam.ctypes.data_as(ct.POINTER(ct.c_float)),
                 )
                 return beam.reshape(n_sources, n_samples)
