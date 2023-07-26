@@ -137,6 +137,7 @@ def beamform(
                     n_sources,
                     n_stations,
                     n_phases,
+                    int(out_of_bounds),
                     beam_max.ctypes.data_as(ct.POINTER(ct.c_float)),
                     beam_argmax.ctypes.data_as(ct.POINTER(ct.c_int)),
                 )
