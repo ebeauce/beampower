@@ -222,7 +222,7 @@ void beamform(float *waveform_features, int *time_delays, float *weights,
 void beamform_max(
     float *waveform_features, int *time_delays, float *weights,
     size_t n_samples, size_t n_sources, size_t n_stations,
-    size_t n_phases, float *beam, int *source_index_beam)
+    size_t n_phases, int out_of_bounds, float *beam, int *source_index_beam)
 {
 
     /* Compute the beamformed network response at each input theoretical source
@@ -258,23 +258,57 @@ void beamform_max(
 
         for (size_t i = 0; i < n_sources; i++)
         {
-
-            // check out-of-bound operations
-            if (t + time_delays_minmax[2 * i + 1] >= n_samples)
-                continue;
-            if (t + time_delays_minmax[2 * i + 0] < 0)
-                continue;
-
             time_delay_offset = i * n_stations * n_phases;
             weights_offset = i * n_stations;
 
-            // compute the beamformed network responses for all sources
-            current_beam = _beam(waveform_features + n_phases * t,
-                                 time_delays + time_delay_offset,
-                                 weights + weights_offset,
-                                 n_samples,
-                                 n_stations,
-                                 n_phases);
+            if (out_of_bounds == 0){
+                // check out-of-bound operations for the whole network
+                if ((t + time_delays_minmax[2 * i + 1]) >= n_samples)
+                    continue;
+                if ((t + time_delays_minmax[2 * i + 0]) < 0)
+                    continue;
+
+                // compute the beamformed network responses for all sources
+                current_beam = _beam(
+                        waveform_features + n_phases * t,
+                        time_delays + time_delay_offset,
+                        weights + weights_offset,
+                        n_samples,
+                        n_stations,
+                        n_phases);
+
+                }
+            else if (out_of_bounds == 1){
+                // check out-of-bound operations separately for each station
+                //
+                // compute the beamformed network responses for all sources
+                current_beam = _beam_check_out_of_bounds(
+                        waveform_features + n_phases * t,
+                        time_delays + time_delay_offset,
+                        weights + weights_offset,
+                        t,
+                        n_samples,
+                        n_stations,
+                        n_phases
+                        );
+            }
+
+            //// check out-of-bound operations
+            //if (t + time_delays_minmax[2 * i + 1] >= n_samples)
+            //    continue;
+            //if (t + time_delays_minmax[2 * i + 0] < 0)
+            //    continue;
+
+            //time_delay_offset = i * n_stations * n_phases;
+            //weights_offset = i * n_stations;
+
+            //// compute the beamformed network responses for all sources
+            //current_beam = _beam(waveform_features + n_phases * t,
+            //                     time_delays + time_delay_offset,
+            //                     weights + weights_offset,
+            //                     n_samples,
+            //                     n_stations,
+            //                     n_phases);
 
             if (current_beam > largest_beam)
             {

@@ -66,6 +66,7 @@ LIBRARIES = {
             ct.c_size_t,  # n_sources
             ct.c_size_t,  # n_stations
             ct.c_size_t,  # n_phases
+            ct.c_int,  # out_of_bounds
             ct.POINTER(ct.c_float),  # beam
         ],
         "beamform_max_argtypes": [
@@ -76,6 +77,7 @@ LIBRARIES = {
             ct.c_size_t,  # n_sources
             ct.c_size_t,  # n_stations
             ct.c_size_t,  # n_phases
+            ct.c_int,  # out_of_bounds
             ct.POINTER(ct.c_float),  # beam_max
             ct.POINTER(ct.c_int),  # beam_argmax
         ],
