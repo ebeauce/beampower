@@ -46,7 +46,7 @@ with open("README.md", "r", encoding="utf-8") as fh:
 
 setup(
     name="beampower",
-    version="1.0.1",
+    version="1.0.2",
     author="Eric Beauce, William B. Frank, Leonard Seydoux",
     author_email="ebeauce@ldeo.columbia.edu",
     description="Package for beamforming/backprojection.",

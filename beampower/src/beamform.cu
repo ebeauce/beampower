@@ -25,9 +25,14 @@ inline void gpuAssert(
     }
 }
 
-void __global__ _find_minmax_time_delays_ker(int* time_delays, float* weights,
-        size_t n_sources, size_t n_stations, size_t n_phases,
-        int* time_delays_minmax){
+void __global__ _find_minmax_time_delays_ker(
+        int* time_delays,
+        float* weights,
+        size_t n_sources,
+        size_t n_stations,
+        size_t n_phases,
+        int* time_delays_minmax
+        ){
 
     /* Find the minimum and maximum time_delays for each point of the grid.
      * Even indexes correspond to minimum time_delays,
@@ -59,15 +64,23 @@ void __global__ _find_minmax_time_delays_ker(int* time_delays, float* weights,
 
 }
 
-void __global__ _beam(float *waveform_features, int *time_delays,
-        int *time_delays_minmax, float *weights, size_t global_time_index,
-        size_t n_samples, size_t n_stations, size_t n_phases, 
-        size_t dim0_beam, float *beam){
+void __global__ _beam(
+        float *waveform_features,
+        int *time_delays,
+        int *time_delays_minmax,
+        float *weights,
+        int global_time_index,
+        size_t n_samples,
+        size_t n_stations,
+        size_t n_phases, 
+        size_t dim0_beam,
+        float *beam){
 
     size_t i = blockIdx.x; // source index
-    size_t t_idx = threadIdx.x; // thread-private index
+    size_t t_idx = threadIdx.x; // thread-private time counter
+    int signed_t_idx = (int)threadIdx.x; // thread-private index in int format
     float beam_i = 0.; // sum
-    size_t det_tr_offset; // position on input pointer
+    size_t feature_offset; // position on input pointer
     // number of elements to store in shared memory
     size_t size_time_delays = n_stations*n_phases;
     // declare shared arrays
@@ -87,21 +100,81 @@ void __global__ _beam(float *waveform_features, int *time_delays,
     __syncthreads();
 
     // compute this beam only if it stays within time bounds
-    if ((global_time_index >= -time_delays_minmax[2*i + 0])
-            & ((global_time_index + threadIdx.x + time_delays_minmax[2*i + 1]) < n_samples)){
+    if (
+            ((global_time_index + signed_t_idx + time_delays_minmax[2*i + 0]) >= 0)
+            & 
+            ((global_time_index + signed_t_idx + time_delays_minmax[2*i + 1]) < n_samples)
+            ){
         // start shift and stack
         for (size_t s=0; s<n_stations; s++){
             for (size_t p=0; p<n_phases; p++){
-                det_tr_offset = s*n_samples*n_phases + p\
-                                + n_phases*time_delays_s[s*n_phases + p]\
-                                + n_phases*threadIdx.x;
-                beam_i += weights_s[s]*waveform_features[det_tr_offset];
+                feature_offset = s * n_samples * n_phases + p\
+                                + n_phases * time_delays_s[s * n_phases + p]\
+                                + n_phases * threadIdx.x;
+                beam_i += weights_s[s] * waveform_features[feature_offset];
             }
         }
         // update beam
         beam[i*dim0_beam + threadIdx.x] = beam_i;
     }
 }
+
+void __global__ _beam_check_out_of_bounds(
+        float *waveform_features,
+        int *time_delays,
+        int *time_delays_minmax,
+        float *weights,
+        int global_time_index,
+        size_t n_samples,
+        size_t n_stations,
+        size_t n_phases, 
+        size_t dim0_beam,
+        float *beam
+        ){
+
+    size_t i = blockIdx.x; // source index
+    size_t t_idx = threadIdx.x; // thread-private time counter
+    int signed_t_idx = (int)threadIdx.x; // thread-private index in int format
+    float beam_i = 0.; // sum
+    size_t feature_offset; // position on input pointer
+    // number of elements to store in shared memory
+    size_t size_time_delays = n_stations*n_phases;
+    // declare shared arrays
+    extern __shared__ int shared[];
+    int *time_delays_s = &shared[0];
+    float *weights_s = (float *)&shared[size_time_delays];
+
+    // read data into shared memory
+    while (t_idx < size_time_delays){
+        time_delays_s[t_idx] = time_delays[i*n_stations*n_phases + t_idx];
+        if (t_idx < n_stations){
+            weights_s[t_idx] = weights[i*n_stations + t_idx];
+        }
+        t_idx += blockDim.x;
+    }
+    // wait for all threads to be done with reading
+    __syncthreads();
+
+    // start shift and stack
+    for (size_t s=0; s<n_stations; s++){
+        for (size_t p=0; p<n_phases; p++){
+            // check temporal bounds (flexible mode)
+            if (
+                    ((global_time_index + signed_t_idx + time_delays_s[s * n_phases + p]) >= 0)
+                    & 
+                    ((global_time_index + signed_t_idx + time_delays_s[s * n_phases + p]) < n_samples)
+                    ){
+                feature_offset = s * n_samples * n_phases + p\
+                                + n_phases * time_delays_s[s * n_phases + p]\
+                                + n_phases * threadIdx.x;
+                beam_i += weights_s[s] * waveform_features[feature_offset];
+            }
+        }
+    }
+    // update beam
+    beam[i*dim0_beam + threadIdx.x] = beam_i;
+}
+
 
 void __global__ _beam_max(float *beam, size_t n_sources, float *beam_max,
         int *source_index_beam_max){
@@ -123,9 +196,18 @@ void __global__ _beam_max(float *beam, size_t n_sources, float *beam_max,
 
 }
 
-void beamform_max(float* waveform_features, int* time_delays, float* weights,
-        size_t n_samples, size_t n_sources, size_t n_stations, size_t n_phases,
-        float* beam_max, int* source_index_beam_max){
+void beamform_max(
+        float* waveform_features,
+        int* time_delays,
+        float* weights,
+        size_t n_samples,
+        size_t n_sources,
+        size_t n_stations,
+        size_t n_phases,
+        int out_of_bounds,
+        float* beam_max, 
+        int* source_index_beam_max
+        ){
 
     /* Compute the beamformed network response at each input theoretical source
      * characterized by their time_delays. The output is a vector with length
@@ -134,7 +216,7 @@ void beamform_max(float* waveform_features, int* time_delays, float* weights,
      * response in 4D (time and space) with applications for event detection
      * but also rupture progation imaging (back-projection). */
 
-    int nGPUs=0;
+    int nGPUs = 0;
     size_t Mb = MEGABYTE;
     //cudaError_t cuda_result;
 
@@ -232,24 +314,38 @@ void beamform_max(float* waveform_features, int* time_delays, float* weights,
         source_index_beam_max_thread = (int *)malloc(sizeofbeam_max);
 
         // transfer data from host (CPU) to device (GPU)
-        cudaMemcpy(waveform_features_d, waveform_features, sizeofdata,
-                cudaMemcpyHostToDevice);
-        cudaMemcpy(time_delays_d, time_delays + src_idx_start*n_stations*n_phases,
-                sizeoftime_delays, cudaMemcpyHostToDevice);
-        cudaMemcpy(weights_d, weights + src_idx_start*n_stations, sizeofweights,
-                cudaMemcpyHostToDevice);
+        cudaMemcpy(
+                waveform_features_d, waveform_features, sizeofdata, cudaMemcpyHostToDevice
+                );
+        cudaMemcpy(
+                time_delays_d,
+                time_delays + src_idx_start*n_stations*n_phases,
+                sizeoftime_delays, 
+                cudaMemcpyHostToDevice
+               );
+        cudaMemcpy(
+                weights_d,
+                weights + src_idx_start*n_stations, 
+                sizeofweights,
+                cudaMemcpyHostToDevice
+                );
 
         // compute time_delays min and max
         _find_minmax_time_delays_ker<<<n_sources_per_GPU/BLOCKSIZE+1, BLOCKSIZE>>>(
-                time_delays_d, weights_d, n_sources_per_GPU, n_stations,
-                n_phases, time_delays_minmax_d);
+                time_delays_d,
+                weights_d, 
+                n_sources_per_GPU,
+                n_stations,
+                n_phases,
+                time_delays_minmax_d
+                );
 
         // initialize beam_max and source_index_beam_max
         cudaMemset(beam_max_d, 0., sizeofbeam_max);
         cudaMemset(source_index_beam_max_d, 0., sizeofbeam_max);
 
         // initialize GPU time index
-        size_t time_GPU = 0;
+        int time_GPU = 0;
 
         // compute network response
         while (time_GPU < n_samples){
@@ -258,18 +354,46 @@ void beamform_max(float* waveform_features, int* time_delays, float* weights,
 
             // backproject the wavefield onto n_sources_per_GPU
             // grid locations and at BLOCKSIZE time locations
-            _beam<<<n_sources_per_GPU,
-                    BLOCKSIZE, shared_mem>>>(
-                            waveform_features_d + n_phases*time_GPU, time_delays_d,
-                            time_delays_minmax_d, weights_d, time_GPU, n_samples,
-                            n_stations, n_phases, BLOCKSIZE, beam_d);
+            if (out_of_bounds == 0){
+                // check out-of-bound operations for the whole network
+                _beam<<<n_sources_per_GPU, BLOCKSIZE, shared_mem>>>(
+                        waveform_features_d + n_phases*time_GPU,
+                        time_delays_d,
+                        time_delays_minmax_d,
+                        weights_d,
+                        time_GPU,
+                        n_samples,
+                        n_stations,
+                        n_phases,
+                        BLOCKSIZE,
+                        beam_d
+                        );
+            }
+            else if (out_of_bounds == 1){
+                // check out-of-bound operations separately for each station
+                _beam_check_out_of_bounds<<<n_sources_per_GPU, BLOCKSIZE, shared_mem>>>(
+                        waveform_features_d + n_phases*time_GPU,
+                        time_delays_d,
+                        time_delays_minmax_d,
+                        weights_d,
+                        time_GPU,
+                        n_samples,
+                        n_stations,
+                        n_phases,
+                        BLOCKSIZE,
+                        beam_d
+                        );
+            }
 
             // find the maximum beam_max and beam_max source index across the
             // n_sources_per_GPU grid locations and at the BLOCKSIZE time
             // locations
             _beam_max<<<1, BLOCKSIZE>>>(
-                    beam_d, n_sources_per_GPU, beam_max_d + time_GPU,
-                    source_index_beam_max_d + time_GPU);
+                    beam_d,
+                    n_sources_per_GPU,
+                    beam_max_d + time_GPU,
+                    source_index_beam_max_d + time_GPU
+                    );
 
             // increment time
             time_GPU += BLOCKSIZE;
@@ -277,8 +401,12 @@ void beamform_max(float* waveform_features, int* time_delays, float* weights,
 
         // get results back to the host
         cudaMemcpy(beam_max_thread, beam_max_d, sizeofbeam_max, cudaMemcpyDeviceToHost);
-        cudaMemcpy(source_index_beam_max_thread, source_index_beam_max_d,
-                sizeofbeam_max, cudaMemcpyDeviceToHost);
+        cudaMemcpy(
+                source_index_beam_max_thread,
+                source_index_beam_max_d,
+                sizeofbeam_max,
+                cudaMemcpyDeviceToHost
+                );
 
         // wait for all GPUs to finish processing their part of the grid
         cudaDeviceSynchronize();
@@ -313,11 +441,19 @@ void beamform_max(float* waveform_features, int* time_delays, float* weights,
 
 }
 
-void beamform(float* waveform_features, int* time_delays, float* weights,
-        size_t n_samples, size_t n_sources, size_t n_stations, size_t n_phases,
-        float* beam){
+void beamform(
+        float* waveform_features,
+        int* time_delays,
+        float* weights,
+        size_t n_samples,
+        size_t n_sources,
+        size_t n_stations,
+        size_t n_phases,
+        int out_of_bounds,
+        float* beam
+        ){
 
-    int nGPUs=0;
+    int nGPUs = 0;
     size_t Mb = MEGABYTE;
     //cudaError_t cuda_result;
 
@@ -404,24 +540,38 @@ void beamform(float* waveform_features, int* time_delays, float* weights,
         cudaMalloc((void**)&beam_d, sizeofbeam);
 
         // transfer data from host (CPU) to device (GPU)
-        cudaMemcpy(waveform_features_d, waveform_features, sizeofdata,
-                cudaMemcpyHostToDevice);
-        cudaMemcpy(time_delays_d, time_delays + src_idx_start*n_stations*n_phases,
-                sizeoftime_delays, cudaMemcpyHostToDevice);
-        cudaMemcpy(weights_d, weights + src_idx_start*n_stations, sizeofweights,
-                cudaMemcpyHostToDevice);
+        cudaMemcpy(
+                waveform_features_d, waveform_features, sizeofdata, cudaMemcpyHostToDevice
+                );
+        cudaMemcpy(
+                time_delays_d,
+                time_delays + src_idx_start*n_stations*n_phases,
+                sizeoftime_delays,
+                cudaMemcpyHostToDevice
+                );
+        cudaMemcpy(
+                weights_d,
+                weights + src_idx_start*n_stations,
+                sizeofweights,
+                cudaMemcpyHostToDevice
+                );
 
         // compute time_delays min and max
         _find_minmax_time_delays_ker<<<n_sources_per_GPU/BLOCKSIZE+1, BLOCKSIZE>>>(
-                time_delays_d, weights_d, n_sources_per_GPU, n_stations,
-                n_phases, time_delays_minmax_d);
+                time_delays_d,
+                weights_d,
+                n_sources_per_GPU,
+                n_stations,
+                n_phases,
+                time_delays_minmax_d
+                );
 
         // initialize beam_d to zeros
         cudaMemset(beam_d, 0., sizeofbeam);
 
 
         // initialize GPU time index
-        size_t time_GPU = 0;
+        int time_GPU = 0;
 
         //printf("GPU %d done with allocating and copying data.\n", id);
 
@@ -430,19 +580,46 @@ void beamform(float* waveform_features, int* time_delays, float* weights,
 
             // backproject the wavefield onto n_sources_per_GPU
             // grid locations and at BLOCKSIZE time locations
-            _beam<<<n_sources_per_GPU,
-                    BLOCKSIZE, shared_mem>>>(
-                            waveform_features_d + n_phases*time_GPU, time_delays_d,
-                            time_delays_minmax_d, weights_d, time_GPU, n_samples,
-                            n_stations, n_phases, n_samples, beam_d + time_GPU);
+
+            if (out_of_bounds == 0){
+                // check out-of-bound operations for the whole network
+                _beam<<<n_sources_per_GPU, BLOCKSIZE, shared_mem>>>(
+                        waveform_features_d + n_phases*time_GPU,
+                        time_delays_d,
+                        time_delays_minmax_d,
+                        weights_d,
+                        time_GPU,
+                        n_samples,
+                        n_stations,
+                        n_phases,
+                        BLOCKSIZE,
+                        beam_d + time_GPU
+                        );
+            }
+            else if (out_of_bounds == 1){
+                // check out-of-bound operations separately for each station
+                _beam_check_out_of_bounds<<<n_sources_per_GPU, BLOCKSIZE, shared_mem>>>(
+                        waveform_features_d + n_phases*time_GPU,
+                        time_delays_d,
+                        time_delays_minmax_d,
+                        weights_d,
+                        time_GPU,
+                        n_samples,
+                        n_stations,
+                        n_phases,
+                        BLOCKSIZE,
+                        beam_d + time_GPU
+                        );
+            }
 
             // increment time
             time_GPU += BLOCKSIZE;
         }
 
         // get results back to the host
-        cudaMemcpy(beam + src_idx_start*n_samples, beam_d, sizeofbeam,
-                cudaMemcpyDeviceToHost);
+        cudaMemcpy(
+                beam + src_idx_start*n_samples, beam_d, sizeofbeam, cudaMemcpyDeviceToHost
+                );
 
         // free memory
         cudaFree(waveform_features_d);

@@ -11,4 +11,4 @@ __all__ = ["load_library", "beamform"]
 from .core import load_library
 from .beampower import beamform
 
-__version__ = "1.0.1"
+__version__ = "1.0.2"

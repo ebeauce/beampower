@@ -19,6 +19,7 @@ LIBRARIES = {
             ct.c_size_t,  # n_sources
             ct.c_size_t,  # n_stations
             ct.c_size_t,  # n_phases
+            ct.c_int,  # out_of_bounds
             ct.POINTER(ct.c_float),  # beam
         ],
         "beamform_differential_argtypes": [
@@ -31,7 +32,7 @@ LIBRARIES = {
             ct.c_size_t,  # n_phases
             ct.POINTER(ct.c_float),  # beam
         ],
-        "beamform_argmax_argtypes": [
+        "beamform_max_argtypes": [
             ct.POINTER(ct.c_float),  # waveform_features
             ct.POINTER(ct.c_int),  # time_delays
             ct.POINTER(ct.c_float),  # weights_sources
@@ -39,6 +40,7 @@ LIBRARIES = {
             ct.c_size_t,  # n_sources
             ct.c_size_t,  # n_stations
             ct.c_size_t,  # n_phases
+            ct.c_int,  # out_of_bounds
             ct.POINTER(ct.c_float),  # beam_max
             ct.POINTER(ct.c_int),  # beam_argmax
         ],
@@ -64,9 +66,10 @@ LIBRARIES = {
             ct.c_size_t,  # n_sources
             ct.c_size_t,  # n_stations
             ct.c_size_t,  # n_phases
+            ct.c_int,  # out_of_bounds
             ct.POINTER(ct.c_float),  # beam
         ],
-        "beamform_argmax_argtypes": [
+        "beamform_max_argtypes": [
             ct.POINTER(ct.c_float),  # waveform_features
             ct.POINTER(ct.c_int),  # time_delays
             ct.POINTER(ct.c_float),  # weights_sources
@@ -74,6 +77,7 @@ LIBRARIES = {
             ct.c_size_t,  # n_sources
             ct.c_size_t,  # n_stations
             ct.c_size_t,  # n_phases
+            ct.c_int,  # out_of_bounds
             ct.POINTER(ct.c_float),  # beam_max
             ct.POINTER(ct.c_int),  # beam_argmax
         ],
@@ -117,7 +121,7 @@ def load_library(device="cpu"):
 
             # Declare types
             lib.beamform.argtypes = library_info["beamform_argtypes"]
-            lib.beamform_max.argtypes = library_info["beamform_argmax_argtypes"]
+            lib.beamform_max.argtypes = library_info["beamform_max_argtypes"]
             if device_name == "cpu":
                 lib.prestack_waveform_features.argtypes = library_info[
                     "prestack_waveform_features_argtypes"
