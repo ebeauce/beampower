@@ -19,10 +19,11 @@ LDFLAGS_CPU=-shared
 # GPU FLAGS
 COPTIMFLAGS_GPU=-O3
 CFLAGS_GPU=-Xcompiler "-fopenmp -fPIC -march=native -ftree-vectorize" -Xlinker -lgomp
-ARCHFLAG=-gencode arch=compute_35,code=sm_35\
-         -gencode arch=compute_70,code=sm_70\
+ARCHFLAG=-gencode arch=compute_70,code=sm_70\
          -gencode arch=compute_75,code=sm_75\
-         -gencode arch=compute_80,code=sm_80
+         -gencode arch=compute_80,code=sm_80\
+         #-gencode arch=compute_35,code=sm_35\
+
 LDFLAGS_GPU=--shared
 
 # build
