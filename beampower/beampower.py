@@ -14,7 +14,8 @@ def beamform(
     device="cpu",
     reduce="max",
     mode="direct",
-    out_of_bounds="strict"
+    out_of_bounds="strict",
+    num_threads=None,
 ):
     """Compute the beamformed network response.
 
@@ -53,6 +54,9 @@ def beamform(
         'differential', the time delays are the inter-station differential
         propagation times. The latter requires `waveform_features` to be based
         on inter-station cross-correlations.
+    num_threads: int or None
+        Number of threads for CPU parallelization. If None, uses one thread per
+        available (visible) CPU.
 
     Returns
     --------
@@ -71,6 +75,11 @@ def beamform(
         out_of_bounds = 0
     elif out_of_bounds == "flexible":
         out_of_bounds = 1
+
+    if num_threads is None:
+        # set num_threads to -1 so that the C routine
+        # understands to use all CPUs
+        num_threads = -1
 
     # Load library
     lib = load_library(device)
@@ -122,6 +131,7 @@ def beamform(
                     n_stations,
                     n_phases,
                     int(out_of_bounds),
+                    int(num_threads),
                     beam.ctypes.data_as(ct.POINTER(ct.c_float)),
                 )
                 return beam.reshape(n_sources, n_samples)
@@ -138,6 +148,7 @@ def beamform(
                     n_stations,
                     n_phases,
                     int(out_of_bounds),
+                    int(num_threads),
                     beam_max.ctypes.data_as(ct.POINTER(ct.c_float)),
                     beam_argmax.ctypes.data_as(ct.POINTER(ct.c_int)),
                 )
@@ -156,6 +167,7 @@ def beamform(
                     n_stations,
                     n_phases,
                     int(out_of_bounds),
+                    #int(num_threads),
                     beam.ctypes.data_as(ct.POINTER(ct.c_float)),
                 )
                 return beam.reshape(n_sources, n_samples)
@@ -172,6 +184,7 @@ def beamform(
                     n_stations,
                     n_phases,
                     int(out_of_bounds),
+                    #int(num_threads),
                     beam_max.ctypes.data_as(ct.POINTER(ct.c_float)),
                     beam_argmax.ctypes.data_as(ct.POINTER(ct.c_int)),
                 )
@@ -192,6 +205,7 @@ def beamform(
                 n_sources,
                 n_stations,
                 n_phases,
+                num_threads,
                 beam.ctypes.data_as(ct.POINTER(ct.c_float)),
             )
 
@@ -214,7 +228,7 @@ def beamform(
         return 1
 
 
-def prestack_traces(waveform_features, weights_phases, device="cpu"):
+def prestack_traces(waveform_features, weights_phases, num_threads=None, device="cpu"):
     """Prestack the detection traces ahead of the beamforming.
 
     Channel-wise stacking for each target seismic phase can be done
@@ -231,6 +245,9 @@ def prestack_traces(waveform_features, weights_phases, device="cpu"):
     device: string, default to 'cpu'
         Either 'cpu' or 'gpu', depending on the available hardware and
         user's preferences.
+    num_threads: int or None
+        Number of threads for CPU parallelization. If None, uses one thread per
+        available (visible) CPU.
 
     Returns
     ----------
@@ -261,6 +278,7 @@ def prestack_traces(waveform_features, weights_phases, device="cpu"):
             n_stations,
             n_channels,
             n_phases,
+            num_threads,
             prestacked_traces.ctypes.data_as(ct.POINTER(ct.c_float)),
         )
 
