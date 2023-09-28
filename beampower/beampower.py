@@ -4,6 +4,7 @@ import ctypes as ct
 import numpy as np
 
 from .core import load_library
+from os import cpu_count
 
 
 def beamform(
@@ -79,7 +80,7 @@ def beamform(
     if num_threads is None:
         # set num_threads to -1 so that the C routine
         # understands to use all CPUs
-        num_threads = -1
+        num_threads = cpu_count()
 
     # Load library
     lib = load_library(device)
@@ -102,7 +103,7 @@ def beamform(
 
     # Prestack detection traces
     waveform_features = prestack_traces(
-        waveform_features, weights_phases, device="cpu"
+        waveform_features, weights_phases, num_threads=num_threads, device="cpu"
     )
 
     # Get waveform features
@@ -258,6 +259,9 @@ def prestack_traces(waveform_features, weights_phases, num_threads=None, device=
     # Load library
     lib = load_library(device)
 
+    if num_threads is None:
+        num_threads = cpu_count()
+
     # Get shapes
     n_stations, n_channels, n_samples = waveform_features.shape
     _, _, n_phases = weights_phases.shape
@@ -278,7 +282,7 @@ def prestack_traces(waveform_features, weights_phases, num_threads=None, device=
             n_stations,
             n_channels,
             n_phases,
-            num_threads,
+            int(num_threads),
             prestacked_traces.ctypes.data_as(ct.POINTER(ct.c_float)),
         )
 

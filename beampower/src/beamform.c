@@ -108,7 +108,7 @@ float _beam_check_out_of_bounds(
 void prestack_waveform_features(
     float *waveform_features, float *weights_phases,
     size_t n_samples, size_t n_stations, size_t n_channels,
-    size_t n_phases, float *prestack_traces)
+    size_t n_phases, int num_threads, float *prestack_traces)
 {
 
     /* The channel dimension can be reduced ahead of the beamforming
@@ -118,6 +118,10 @@ void prestack_waveform_features(
     size_t prestack_offset;
     size_t feature_offset;
     size_t weight_offset;
+
+    if (num_threads != -1){
+        omp_set_num_threads(num_threads);
+    }
 
 #pragma omp parallel for private(prestack_offset, feature_offset, weight_offset) \
     shared(waveform_features, weights_phases, prestack_traces)
@@ -149,7 +153,7 @@ void prestack_waveform_features(
 
 void beamform(float *waveform_features, int *time_delays, float *weights,
               size_t n_samples, size_t n_sources, size_t n_stations,
-              size_t n_phases, int out_of_bounds, float *beam)
+              size_t n_phases, int out_of_bounds, int num_threads, float *beam)
 {
 
     /* Compute the beamformed network response at each input theoretical source
@@ -164,6 +168,10 @@ void beamform(float *waveform_features, int *time_delays, float *weights,
     size_t beam_offset;       // location on beam
     int *time_delays_minmax;  // vector with min and max mv of each source
     int time_delay_min, time_delay_max;
+
+    if (num_threads != -1){
+        omp_set_num_threads(num_threads);
+    }
 
     // search for min and max time_delay of each source
     time_delays_minmax = (int *)malloc(2 * n_sources * sizeof(int));
@@ -222,7 +230,8 @@ void beamform(float *waveform_features, int *time_delays, float *weights,
 void beamform_max(
     float *waveform_features, int *time_delays, float *weights,
     size_t n_samples, size_t n_sources, size_t n_stations,
-    size_t n_phases, int out_of_bounds, float *beam, int *source_index_beam)
+    size_t n_phases, int out_of_bounds, int num_threads,
+    float *beam, int *source_index_beam)
 {
 
     /* Compute the beamformed network response at each input theoretical source
@@ -239,6 +248,10 @@ void beamform_max(
     float current_beam;       // value of currently computed beam
     float largest_beam;       // current largest visited beam
     int largest_beam_index;   // source index of current largest visited beam
+
+    if (num_threads != -1){
+        omp_set_num_threads(num_threads);
+    }
 
     // search for min and max time_delay of each source
     time_delays_minmax = (int *)malloc(2 * n_sources * sizeof(int));
@@ -324,7 +337,7 @@ void beamform_max(
 
 void beamform_differential(float *waveform_features, int *time_delays, float *weights,
                            size_t n_samples, size_t n_sources, size_t n_stations,
-                           size_t n_phases, float *beam)
+                           size_t n_phases, int num_threads, float *beam)
 {
 
     /* Compute the beamformed network response at each input theoretical source
@@ -340,6 +353,10 @@ void beamform_differential(float *waveform_features, int *time_delays, float *we
     int t = (n_samples - 1) / 2; // location or zero-lag
     int *time_delays_minmax;     // vector with min and max mv of each source
     int time_delay_min, time_delay_max;
+
+    if (num_threads != -1){
+        omp_set_num_threads(num_threads);
+    }
 
     // search for min and max time_delay of each source
     time_delays_minmax = (int *)malloc(2 * n_sources * sizeof(int));
