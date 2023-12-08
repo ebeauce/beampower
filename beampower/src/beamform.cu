@@ -416,8 +416,8 @@ void beamform_max(
         gpuErrchk(cudaDeviceSynchronize());
 
         // critical section to merge all the single-GPU beam_max into one
-        for (size_t t=0; t<n_samples; t++){
 #pragma omp critical
+        for (size_t t=0; t<n_samples; t++){
             {
                 if (beam_max_thread[t] > beam_max[t]){
                     beam_max[t] = beam_max_thread[t];
