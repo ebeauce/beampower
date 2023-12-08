@@ -55,6 +55,15 @@ def beamform(
         'differential', the time delays are the inter-station differential
         propagation times. The latter requires `waveform_features` to be based
         on inter-station cross-correlations.
+    out_of_bounds: string, default to 'strict'
+        Either 'strict' (default) or 'flexible'.
+        - 'strict': A beam is computed if and only if the moveouts point to a
+          valid sample (that is, within the bounds of the data stream) for every
+          channel used in the beam.
+        - 'flexbile': A beam is computed as long as the moveouts point to a
+          valid sample for at least one channel. This option is particularly
+          useful for real time applications where an event might have been
+          recorded at the closest stations but not yet at the more distant ones.
     num_threads: int or None
         Number of threads for CPU parallelization. If None, uses one thread per
         available (visible) CPU.
@@ -84,18 +93,6 @@ def beamform(
 
     # Load library
     lib = load_library(device)
-
-    # if mode == "differential":
-    #     # we assume that the cross-correlation vectors have
-    #     # length 2N+1 and that the 0-lag is at sample N
-    #     zero_lag_index = waveform_features.shape[-1] // 2
-    #     # trim the cross-correlation vectors for lags
-    #     # between (delta tau)_min=-(delta tau)_max and +(delta tau)_max
-    #     dtau_max = np.abs(time_delays).max()
-    #     dtau_max = min(zero_lag_index, dtau_max)
-    #     waveform_features = waveform_features[
-    #         ..., zero_lag_index - dtau_max : zero_lag_index + dtau_max + 1
-    #     ]
 
     # Get shapes
     n_stations, _, n_samples = waveform_features.shape
