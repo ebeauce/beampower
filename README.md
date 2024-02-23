@@ -49,19 +49,8 @@ See the [documentation](https://ebeauce.github.io/beampower/) on how to use `bea
 
 These notebooks require to install the following packages to be ran properly:
 
-- `xarray`
 - `obspy>=1.3.0`  
 - `matplotlib`  
 - `tqdm`  
 - `pykonal`
-
-## To-do's
-
-- [ ] Describe `pykonal` issues with some grids (?).
-- [ ] Compare our locs with a catalog (?).
-- [ ] Reduce use of xarray and use more explicit numpy.
-- [ ] Investigate apparent issues in location.
-
-
-
 
