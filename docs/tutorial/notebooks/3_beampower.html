@@ -1,0 +1,904 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>3. Beamforming for location &mdash; beampower 1.0.1 documentation</title>
+      <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/nbsphinx-code-cells.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+        <script src="../../_static/documentation_options.js?v=292eb321"></script>
+        <script src="../../_static/doctools.js?v=888ff710"></script>
+        <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+        <script>window.MathJax = {"tex": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true}, "options": {"ignoreHtmlClass": "tex2jax_ignore|mathjax_ignore|document", "processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+        <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="Updates" href="../../updates.html" />
+    <link rel="prev" title="2. Compute travel times" href="2_travel_times.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            beampower
+              <img src="../../_static/logo.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../introduction.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../usage.html">Usage</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../../tutorial.html">Tutorial</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../general.html">Pre-requisites</a></li>
+<li class="toctree-l2"><a class="reference internal" href="0_download.html">0. Download seismograms</a></li>
+<li class="toctree-l2"><a class="reference internal" href="1_preprocess.html">1. Preprocess seismic waveforms</a></li>
+<li class="toctree-l2"><a class="reference internal" href="2_travel_times.html">2. Compute travel times</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">3. Beamforming for location</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#Contents">Contents</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#Compute-waveform-features">Compute waveform features</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#Show-an-example-envelope">Show an example envelope</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#Initialize-beamforming">Initialize beamforming</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#Load-travel-times-and-convert-them-to-samples">Load travel times and convert them to samples</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#Define-the-phase-specific-weights">Define the phase-specific weights</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#Define-the-source-receiver-weights">Define the source-receiver weights</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#Compute-the-beamformed-network-response">Compute the beamformed network response</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#Detect">Detect</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#Designing-the-detection-threshold">Designing the detection threshold</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#Show-detection">Show detection</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#Plot-with-waveforms">Plot with waveforms</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#Plot-with-envelopes">Plot with envelopes</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#Going-further">Going further</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../updates.html">Updates</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">beampower</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../tutorial.html">Tutorial</a></li>
+      <li class="breadcrumb-item active">3. Beamforming for location</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../../_sources/tutorial/notebooks/3_beampower.ipynb.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="3.-Beamforming-for-location">
+<h1>3. Beamforming for location<a class="headerlink" href="#3.-Beamforming-for-location" title="Link to this heading"></a></h1>
+<p>This notebook computes the beamformed network response and demonstrates how to use it for the detection and location of an eathquake. The workflow consists of computing waveform features first (envelopes, kurtosis, etc.) and, then, to shift-and-stack them according to the previously computed travel times.</p>
+<section id="Contents">
+<h2>Contents<a class="headerlink" href="#Contents" title="Link to this heading"></a></h2>
+<ul class="simple">
+<li><p><a class="reference internal" href="#Compute-waveform-features"><span class="std std-ref">Compute waveform features</span></a></p></li>
+<li><p>Read travel times</p></li>
+<li><p><a class="reference internal" href="#Show-an-example-envelope"><span class="std std-ref">Show an example waveform</span></a></p></li>
+</ul>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[1]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">beampower</span> <span class="k">as</span> <span class="nn">bp</span>
+<span class="kn">import</span> <span class="nn">glob</span>
+<span class="kn">import</span> <span class="nn">h5py</span> <span class="k">as</span> <span class="nn">h5</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+<span class="kn">import</span> <span class="nn">tqdm</span>
+
+<span class="kn">from</span> <span class="nn">matplotlib</span> <span class="kn">import</span> <span class="n">pyplot</span> <span class="k">as</span> <span class="n">plt</span>
+<span class="kn">from</span> <span class="nn">scipy</span> <span class="kn">import</span> <span class="n">signal</span><span class="p">,</span> <span class="n">stats</span>
+<span class="kn">from</span> <span class="nn">obspy</span> <span class="kn">import</span> <span class="n">read</span><span class="p">,</span> <span class="n">read_inventory</span><span class="p">,</span> <span class="n">UTCDateTime</span>
+<span class="kn">from</span> <span class="nn">obspy.geodetics.base</span> <span class="kn">import</span> <span class="n">locations2degrees</span><span class="p">,</span> <span class="n">degrees2kilometers</span>
+<span class="k">try</span><span class="p">:</span>
+    <span class="kn">from</span> <span class="nn">scipy.stats</span> <span class="kn">import</span> <span class="n">median_abs_deviation</span> <span class="k">as</span> <span class="n">scimad</span>
+<span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
+    <span class="kn">from</span> <span class="nn">scipy.stats</span> <span class="kn">import</span> <span class="n">median_absolute_deviation</span> <span class="k">as</span> <span class="n">scimad</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[2]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="o">%</span><span class="k">load_ext</span> autoreload
+<span class="o">%</span><span class="k">autoreload</span> 2
+</pre></div>
+</div>
+</div>
+</section>
+<section id="Compute-waveform-features">
+<h2>Compute waveform features<a class="headerlink" href="#Compute-waveform-features" title="Link to this heading"></a></h2>
+<p>The underlying paradigm of the beamforming method is that when using the exact travel times to align the traces, they sum up to the largest amplitude beam. However, the waves emitted by a double-couple source may sum up to zero due to antisymmetries in the radiated wavefield. Furthermore, imprecisions in the velocity model and the finiteness of the grid often mean that the exact travel times are not available in the pre-computed travel time grid.</p>
+<p>To address the aforementionned drawbacks, we compute positive-valued <em>waveform features</em> to handle antisymmetries in the wavefield and we make sure that they are smooth enough in time to be correctly aligned by at least one set of pre-computed travel times (think of trying, unsuccesfully, to align Diracs with a finite resolution travel time grid!).</p>
+<p>Here, we use the waveform envelopes. The envelope is computed from the analytical signal (Hilbert transform). To avoid noisy stations from dominating the beams, we normalize each trace by its median absolute deviation. The envelopes are clipped above <span class="math notranslate nohighlight">\(10^5\)</span> times the mean absolute deviation in order to avoid spikes or proximal transient noise to corrupt the beams.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[3]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">envelope</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Envelope transformation.</span>
+
+<span class="sd">    Calculate the envelope of the input one-dimensional signal with the Hilbert</span>
+<span class="sd">    transform. The data is normalized by the mean absolute deviation over the</span>
+<span class="sd">    entire signal window first. The envelope is clipped at a maximum of 10^5</span>
+<span class="sd">    times the mad of the envelope.</span>
+
+<span class="sd">    Arguments</span>
+<span class="sd">    ---------</span>
+<span class="sd">    x: array-like</span>
+<span class="sd">        The input one-dimensional signal.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    array-like</span>
+<span class="sd">        The envelope of x with same shape than x.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># Envelope</span>
+    <span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">signal</span><span class="o">.</span><span class="n">hilbert</span><span class="p">(</span><span class="n">x</span><span class="p">))</span>
+
+    <span class="c1"># Normalization</span>
+    <span class="n">x_mad</span> <span class="o">=</span> <span class="n">scimad</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+    <span class="n">x_mad</span> <span class="o">=</span> <span class="mf">1.0</span> <span class="k">if</span> <span class="n">x_mad</span> <span class="o">==</span> <span class="mf">0.0</span> <span class="k">else</span> <span class="n">x_mad</span>
+    <span class="n">x</span> <span class="o">=</span> <span class="p">(</span><span class="n">x</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">median</span><span class="p">(</span><span class="n">x</span><span class="p">))</span> <span class="o">/</span> <span class="n">x_mad</span>
+
+    <span class="c1"># Clip</span>
+    <span class="n">x_max</span> <span class="o">=</span> <span class="mf">10.0</span> <span class="o">**</span> <span class="mf">5.0</span>
+    <span class="k">return</span> <span class="n">x</span><span class="o">.</span><span class="n">clip</span><span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="n">x_max</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<p>Read the network metadata into the <code class="docutils literal notranslate"><span class="pre">network</span></code> <code class="docutils literal notranslate"><span class="pre">pandas.DataFrame</span></code>. We will use <code class="docutils literal notranslate"><span class="pre">network</span></code> and its list of stations to order consistently the <code class="docutils literal notranslate"><span class="pre">waveform_features</span></code> and <code class="docutils literal notranslate"><span class="pre">travel_times</span></code> arrays.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[4]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">NETWORK_PATH</span> <span class="o">=</span> <span class="s2">&quot;../data/network.csv&quot;</span>
+<span class="n">network</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">NETWORK_PATH</span><span class="p">)</span>
+<span class="n">network</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[4]:
+</pre></div>
+</div>
+<div class="output_area rendered_html docutils container">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>code</th>
+      <th>longitude</th>
+      <th>latitude</th>
+      <th>elevation</th>
+      <th>depth</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>DC06</td>
+      <td>30.265751</td>
+      <td>40.616718</td>
+      <td>555.0</td>
+      <td>-0.555</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>DC07</td>
+      <td>30.242170</td>
+      <td>40.667080</td>
+      <td>164.0</td>
+      <td>-0.164</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>DC08</td>
+      <td>30.250130</td>
+      <td>40.744438</td>
+      <td>162.0</td>
+      <td>-0.162</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>DD06</td>
+      <td>30.317770</td>
+      <td>40.623539</td>
+      <td>182.0</td>
+      <td>-0.182</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>DE07</td>
+      <td>30.411539</td>
+      <td>40.679661</td>
+      <td>40.0</td>
+      <td>-0.040</td>
+    </tr>
+    <tr>
+      <th>5</th>
+      <td>DE08</td>
+      <td>30.406469</td>
+      <td>40.748562</td>
+      <td>31.0</td>
+      <td>-0.031</td>
+    </tr>
+    <tr>
+      <th>6</th>
+      <td>SAUV</td>
+      <td>30.327200</td>
+      <td>40.740200</td>
+      <td>170.0</td>
+      <td>-0.170</td>
+    </tr>
+    <tr>
+      <th>7</th>
+      <td>SPNC</td>
+      <td>30.308300</td>
+      <td>40.686001</td>
+      <td>190.0</td>
+      <td>-0.190</td>
+    </tr>
+  </tbody>
+</table>
+</div></div>
+</div>
+<p>We first initialize the waveform features as a <code class="docutils literal notranslate"><span class="pre">DataArray</span></code> in order to keep explicit indexing.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[5]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">DIRPATH_INVENTORY</span> <span class="o">=</span> <span class="s2">&quot;../data/processed/*.xml&quot;</span>
+<span class="n">DIRPATH_WAVEFORMS</span> <span class="o">=</span> <span class="s2">&quot;../data/processed/*.mseed&quot;</span>
+<span class="n">COMPONENTS</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;N&quot;</span><span class="p">,</span> <span class="s2">&quot;E&quot;</span><span class="p">,</span> <span class="s2">&quot;Z&quot;</span><span class="p">]</span>
+<span class="n">num_stations</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">network</span><span class="p">)</span>
+<span class="n">num_components</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">COMPONENTS</span><span class="p">)</span>
+
+<span class="c1"># Find the miniseed files and read them with obspy&#39;s read function</span>
+<span class="n">filepaths_waveforms</span> <span class="o">=</span> <span class="n">glob</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="n">DIRPATH_WAVEFORMS</span><span class="p">)</span>
+<span class="n">traces</span> <span class="o">=</span> <span class="n">read</span><span class="p">(</span><span class="n">DIRPATH_WAVEFORMS</span><span class="p">)</span>
+
+<span class="c1"># set the num_samples variables to 1 day (some traces may have num_samples+1 samples because of</span>
+<span class="c1"># time rounding errors when downloading and preprocessing the data)</span>
+<span class="n">num_samples</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="mf">24.</span> <span class="o">*</span> <span class="mf">3600.</span> <span class="o">*</span> <span class="n">traces</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">sampling_rate</span><span class="p">)</span>
+
+<span class="n">waveform_features</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span>
+    <span class="p">(</span><span class="n">num_stations</span><span class="p">,</span> <span class="n">num_components</span><span class="p">,</span> <span class="n">num_samples</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span>
+<span class="p">)</span>
+<span class="k">for</span> <span class="n">s</span><span class="p">,</span> <span class="n">sta</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">network</span><span class="o">.</span><span class="n">code</span><span class="p">):</span>
+    <span class="k">for</span> <span class="n">c</span><span class="p">,</span> <span class="n">cp</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">COMPONENTS</span><span class="p">):</span>
+        <span class="n">tr</span> <span class="o">=</span> <span class="n">traces</span><span class="o">.</span><span class="n">select</span><span class="p">(</span><span class="n">station</span><span class="o">=</span><span class="n">sta</span><span class="p">,</span> <span class="n">component</span><span class="o">=</span><span class="n">cp</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">waveform_features</span><span class="p">[</span><span class="n">s</span><span class="p">,</span> <span class="n">c</span><span class="p">,</span> <span class="p">:]</span> <span class="o">=</span> <span class="n">envelope</span><span class="p">(</span><span class="n">tr</span><span class="o">.</span><span class="n">data</span><span class="p">)[</span><span class="o">...</span><span class="p">,</span> <span class="p">:</span><span class="n">num_samples</span><span class="p">]</span>
+</pre></div>
+</div>
+</div>
+</section>
+<section id="Show-an-example-envelope">
+<h2>Show an example envelope<a class="headerlink" href="#Show-an-example-envelope" title="Link to this heading"></a></h2>
+<p>Example of a waveform with corresponding envelope.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[6]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">START</span><span class="p">,</span> <span class="n">END</span> <span class="o">=</span> <span class="s2">&quot;2012-07-26 13:48:25&quot;</span><span class="p">,</span> <span class="s2">&quot;2012-07-26 13:49:00&quot;</span>
+<span class="n">STATION_NAME</span> <span class="o">=</span> <span class="s2">&quot;DC06&quot;</span>
+<span class="c1"># STATION_NAME = network.code.iloc[2]</span>
+<span class="n">COMPONENT</span> <span class="o">=</span> <span class="s2">&quot;E&quot;</span>
+
+<span class="n">station_idx</span> <span class="o">=</span> <span class="n">network</span><span class="o">.</span><span class="n">code</span><span class="o">.</span><span class="n">values</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">STATION_NAME</span><span class="p">)</span>
+<span class="n">component_idx</span> <span class="o">=</span> <span class="n">COMPONENTS</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">COMPONENT</span><span class="p">)</span>
+
+<span class="c1"># Get example waveform</span>
+<span class="n">trace</span> <span class="o">=</span> <span class="n">traces</span><span class="o">.</span><span class="n">select</span><span class="p">(</span><span class="n">station</span><span class="o">=</span><span class="n">STATION_NAME</span><span class="p">,</span> <span class="n">component</span><span class="o">=</span><span class="n">COMPONENT</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+<span class="n">starttime_idx</span> <span class="o">=</span> <span class="nb">int</span><span class="p">((</span><span class="n">UTCDateTime</span><span class="p">(</span><span class="n">START</span><span class="p">)</span> <span class="o">-</span> <span class="n">trace</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">starttime</span><span class="p">)</span> <span class="o">/</span> <span class="n">trace</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">delta</span><span class="p">)</span>
+<span class="n">trace</span> <span class="o">=</span> <span class="n">trace</span><span class="o">.</span><span class="n">slice</span><span class="p">(</span><span class="n">starttime</span><span class="o">=</span><span class="n">UTCDateTime</span><span class="p">(</span><span class="n">START</span><span class="p">),</span> <span class="n">endtime</span><span class="o">=</span><span class="n">UTCDateTime</span><span class="p">(</span><span class="n">END</span><span class="p">))</span>
+<span class="n">endtime_idx</span> <span class="o">=</span> <span class="n">starttime_idx</span> <span class="o">+</span> <span class="nb">len</span><span class="p">(</span><span class="n">trace</span><span class="o">.</span><span class="n">data</span><span class="p">)</span>
+<span class="n">times</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">to_datetime</span><span class="p">(</span><span class="n">trace</span><span class="o">.</span><span class="n">times</span><span class="p">(</span><span class="s2">&quot;timestamp&quot;</span><span class="p">),</span> <span class="n">unit</span><span class="o">=</span><span class="s2">&quot;s&quot;</span><span class="p">)</span>
+
+<span class="c1"># Plot waveform</span>
+<span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">15</span><span class="p">,</span> <span class="mi">7</span><span class="p">))</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">times</span><span class="p">,</span> <span class="n">trace</span><span class="o">.</span><span class="n">data</span><span class="p">)</span>
+<span class="n">ymax</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">ax</span><span class="o">.</span><span class="n">get_ylim</span><span class="p">()))</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">set_ylim</span><span class="p">(</span><span class="o">-</span><span class="n">ymax</span><span class="p">,</span> <span class="n">ymax</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s2">&quot;Ground speed (m/s)&quot;</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;C0&quot;</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Example waveform and feature (station </span><span class="si">{</span><span class="n">STATION_NAME</span><span class="si">}</span><span class="s2">)&quot;</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">grid</span><span class="p">()</span>
+
+<span class="c1"># Plot envelope on a second axe (not the same scale)</span>
+<span class="n">ax</span> <span class="o">=</span> <span class="n">ax</span><span class="o">.</span><span class="n">twinx</span><span class="p">()</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">times</span><span class="p">,</span> <span class="n">waveform_features</span><span class="p">[</span><span class="n">station_idx</span><span class="p">,</span> <span class="n">component_idx</span><span class="p">,</span> <span class="n">starttime_idx</span><span class="p">:</span><span class="n">endtime_idx</span><span class="p">],</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;C1&quot;</span><span class="p">)</span>
+
+<span class="c1"># Labels</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s2">&quot;Feature (clipped envelope)&quot;</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;C1&quot;</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">set_ylim</span><span class="p">(</span><span class="n">bottom</span><span class="o">=-</span><span class="nb">max</span><span class="p">(</span><span class="n">ax</span><span class="o">.</span><span class="n">get_ylim</span><span class="p">()))</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../../_images/tutorial_notebooks_3_beampower_10_0.png" src="../../_images/tutorial_notebooks_3_beampower_10_0.png" />
+</div>
+</div>
+</section>
+<section id="Initialize-beamforming">
+<h2>Initialize beamforming<a class="headerlink" href="#Initialize-beamforming" title="Link to this heading"></a></h2>
+<section id="Load-travel-times-and-convert-them-to-samples">
+<h3>Load travel times and convert them to samples<a class="headerlink" href="#Load-travel-times-and-convert-them-to-samples" title="Link to this heading"></a></h3>
+<p>Get the travel times obtained from <a class="reference internal" href="2_travel_times.html"><span class="doc">our notebook #2</span></a> on travel time computation.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[7]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># load grid point coordinates and travel times as a numpy array</span>
+<span class="n">PHASES</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;P&quot;</span><span class="p">,</span> <span class="s2">&quot;S&quot;</span><span class="p">]</span>
+<span class="n">travel_times</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="n">source_coordinates</span> <span class="o">=</span> <span class="p">{}</span>
+<span class="k">with</span> <span class="n">h5</span><span class="o">.</span><span class="n">File</span><span class="p">(</span><span class="s2">&quot;../data/travel_times.h5&quot;</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;r&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">ftt</span><span class="p">:</span>
+    <span class="k">for</span> <span class="n">field</span> <span class="ow">in</span> <span class="n">ftt</span><span class="p">[</span><span class="s2">&quot;source_coordinates&quot;</span><span class="p">]:</span>
+        <span class="n">source_coordinates</span><span class="p">[</span><span class="n">field</span><span class="p">]</span> <span class="o">=</span> <span class="n">ftt</span><span class="p">[</span><span class="s2">&quot;source_coordinates&quot;</span><span class="p">][</span><span class="n">field</span><span class="p">][()]</span><span class="o">.</span><span class="n">flatten</span><span class="p">()</span>
+    <span class="n">num_sources</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">source_coordinates</span><span class="p">[</span><span class="n">field</span><span class="p">])</span>
+    <span class="n">travel_times</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">num_sources</span><span class="p">,</span> <span class="n">num_stations</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">PHASES</span><span class="p">)),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">p</span><span class="p">,</span> <span class="n">phase</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">PHASES</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">s</span><span class="p">,</span> <span class="n">sta</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">network</span><span class="o">.</span><span class="n">code</span><span class="p">):</span>
+            <span class="n">travel_times</span><span class="p">[:,</span> <span class="n">s</span><span class="p">,</span> <span class="n">p</span><span class="p">]</span> <span class="o">=</span> <span class="n">ftt</span><span class="p">[</span><span class="n">phase</span><span class="p">][</span><span class="n">sta</span><span class="p">][()]</span><span class="o">.</span><span class="n">flatten</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[8]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># convert travel times in seconds to time delays in samples</span>
+<span class="k">def</span> <span class="nf">sec_to_samp</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">sr</span><span class="p">,</span> <span class="n">epsilon</span><span class="o">=</span><span class="mf">0.2</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Convert seconds to samples taking into account rounding errors.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    -----------</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># we add epsilon so that we fall onto the right</span>
+    <span class="c1"># integer number even if there is a small precision</span>
+    <span class="c1"># error in the floating point number</span>
+    <span class="n">sign</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sign</span><span class="p">(</span><span class="n">t</span><span class="p">)</span>
+    <span class="n">t_samp_float</span> <span class="o">=</span> <span class="nb">abs</span><span class="p">(</span><span class="n">t</span> <span class="o">*</span> <span class="n">sr</span><span class="p">)</span> <span class="o">+</span> <span class="n">epsilon</span>
+    <span class="c1"># round and restore sign</span>
+    <span class="n">t_samp_int</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">int32</span><span class="p">(</span><span class="n">sign</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">int32</span><span class="p">(</span><span class="n">t_samp_float</span><span class="p">))</span>
+    <span class="k">return</span> <span class="n">t_samp_int</span>
+
+<span class="n">sampling_rate</span> <span class="o">=</span> <span class="n">traces</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">sampling_rate</span>
+<span class="n">time_delays</span> <span class="o">=</span> <span class="n">sec_to_samp</span><span class="p">(</span><span class="n">travel_times</span><span class="p">,</span> <span class="n">sampling_rate</span><span class="p">)</span>
+<span class="c1"># you may uncomment the following line to make the time delays relative to the first P-wave arrival for each source</span>
+<span class="c1"># time_delays -= np.min(time_delays, axis=(1, 2), keepdims=True)</span>
+</pre></div>
+</div>
+</div>
+</section>
+<section id="Define-the-phase-specific-weights">
+<h3>Define the phase-specific weights<a class="headerlink" href="#Define-the-phase-specific-weights" title="Link to this heading"></a></h3>
+<p>We recall that the general definition of a beam, with source-receiver <span class="math notranslate nohighlight">\(\beta_{k, s}\)</span> and phase-specific weights <span class="math notranslate nohighlight">\(\alpha_{s, c, p}\)</span>, is:</p>
+<div class="math notranslate nohighlight">
+\[b_k(t) = \sum_{s, c, p} \beta_{k, s} \alpha_{s, c, p} \mathcal{U}_{s, c}(t + \tau_{s, p}^{(k)}),\]</div>
+<p>where <span class="math notranslate nohighlight">\(k\)</span> is the source (grid point) index, <span class="math notranslate nohighlight">\(\mathcal{U}_{s, c}(t)\)</span> is the waveform feature at station <span class="math notranslate nohighlight">\(s\)</span>, channel <span class="math notranslate nohighlight">\(c\)</span> and time <span class="math notranslate nohighlight">\(t\)</span>, and <span class="math notranslate nohighlight">\(\tau_{s, p}^{(k)}\)</span> is the moveout at station <span class="math notranslate nohighlight">\(s\)</span>, seismic phase <span class="math notranslate nohighlight">\(p\)</span> and source <span class="math notranslate nohighlight">\(k\)</span>. For a given <span class="math notranslate nohighlight">\(p\)</span>, the moveout is the same at all channels of the same station <span class="math notranslate nohighlight">\(s\)</span>. Therefore, the quantity <span class="math notranslate nohighlight">\(U_{s, p}(t) = \sum_{c} \alpha_{s, c, p} \mathcal{U}_{s, c}(t)\)</span> can be computed once and for all
+instead of re-computing it for each source.</p>
+<p><span class="math notranslate nohighlight">\(\alpha_{s, c, p}\)</span> is the phase-specific weight at station <span class="math notranslate nohighlight">\(s\)</span> and channel <span class="math notranslate nohighlight">\(c\)</span> and for phase <span class="math notranslate nohighlight">\(p\)</span>. In this tutorial, <span class="math notranslate nohighlight">\(\mathcal{U}_{s, c}\)</span> is the envelope of the trace at station <span class="math notranslate nohighlight">\(s\)</span> and channel <span class="math notranslate nohighlight">\(c\)</span>. We define <span class="math notranslate nohighlight">\(\alpha_{s, c, p}\)</span> so that horizontal-component traces contribute to the S-wave beam and vertical-component traces contribute to the P-wave beam.</p>
+<div class="math notranslate nohighlight">
+\[\alpha_{s, c=0, p=0} = 0;\quad \alpha_{s, c=1, p=0} = 0;\quad \alpha_{s, c=2, p=0} = 1\]</div>
+<div class="math notranslate nohighlight">
+\[\alpha_{s, c=0, p=1} = 1;\quad \alpha_{s, c=1, p=1} = 1;\quad \alpha_{s, c=2, p=1} = 0.\]</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[9]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Phase weights</span>
+<span class="n">weights_phase</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">num_stations</span><span class="p">,</span> <span class="n">num_components</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">PHASES</span><span class="p">)),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+<span class="n">weights_phase</span><span class="p">[:,</span> <span class="p">:</span><span class="mi">2</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="mf">0.</span> <span class="c1"># horizontal component traces do not contribute to P-wave beam</span>
+<span class="n">weights_phase</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="mf">1.</span> <span class="c1"># vertical component traces contribute to P-wave beam</span>
+<span class="n">weights_phase</span><span class="p">[:,</span> <span class="p">:</span><span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="mf">1.</span> <span class="c1"># horizontal component traces contribute to S-wave beam</span>
+<span class="n">weights_phase</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="mf">0.</span> <span class="c1"># vertical component traces do not contribute to S-wave beam</span>
+</pre></div>
+</div>
+</div>
+</section>
+</section>
+<section id="Define-the-source-receiver-weights">
+<h2>Define the source-receiver weights<a class="headerlink" href="#Define-the-source-receiver-weights" title="Link to this heading"></a></h2>
+<p>When using a grid covering a large geographical region, all stations may not be relevant to every source (grid point). Small earthquakes occurring at one end of the region are unlikely to be recorded by stations at the other end of the region. In order to only use the relevant data to each source, the source-receiver weights can be adjusted. Typically, <span class="math notranslate nohighlight">\(\beta_{k, s} = 0\)</span> when source <span class="math notranslate nohighlight">\(k\)</span> is further than XXkm from station <span class="math notranslate nohighlight">\(s\)</span>. In this tutorial, we deal with a relatively
+small-scale problem so we keep all weights equal to 1.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[10]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Sources weights</span>
+<span class="n">weights_sources</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">time_delays</span><span class="o">.</span><span class="n">shape</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</section>
+<section id="Compute-the-beamformed-network-response">
+<h2>Compute the beamformed network response<a class="headerlink" href="#Compute-the-beamformed-network-response" title="Link to this heading"></a></h2>
+<p>At each time step, we compute the beamformed network response for every grid point and keep the maximum. We thus obtain a time series of maximum beams at every time.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[11]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">beam_max</span><span class="p">,</span> <span class="n">beam_argmax</span> <span class="o">=</span> <span class="n">bp</span><span class="o">.</span><span class="n">beamform</span><span class="p">(</span>
+    <span class="n">waveform_features</span><span class="p">,</span>
+    <span class="n">time_delays</span><span class="p">,</span>
+    <span class="n">weights_phase</span><span class="p">,</span>
+    <span class="n">weights_sources</span><span class="p">,</span>
+    <span class="n">device</span><span class="o">=</span><span class="s2">&quot;cpu&quot;</span><span class="p">,</span>
+    <span class="n">reduce</span><span class="o">=</span><span class="s2">&quot;max&quot;</span><span class="p">,</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</section>
+<section id="Detect">
+<h2>Detect<a class="headerlink" href="#Detect" title="Link to this heading"></a></h2>
+<p>We detect the maxima with find peaks and use a threshold criterion to keep only the prominent peaks (or events).</p>
+<section id="Designing-the-detection-threshold">
+<h3>Designing the detection threshold<a class="headerlink" href="#Designing-the-detection-threshold" title="Link to this heading"></a></h3>
+<p>The detection threshold is a crucial step in turning the maximum beam into an earthquake detector. In this minimalistic example with envelope-based backprojection, the maximum beam is extremely noisy and the detection threshold needs to adapt, as much as possible, to noise variations. In the following, we show how to efficiently compute a time-dependent detection threshold.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[12]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">time_dependent_threshold</span><span class="p">(</span>
+    <span class="n">time_series</span><span class="p">,</span> <span class="n">sliding_window</span><span class="p">,</span> <span class="n">overlap</span><span class="o">=</span><span class="mf">0.66</span><span class="p">,</span> <span class="n">threshold_type</span><span class="o">=</span><span class="s2">&quot;rms&quot;</span><span class="p">,</span> <span class="n">num_dev</span><span class="o">=</span><span class="mf">8.</span>
+<span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Time dependent detection threshold.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    -----------</span>
+<span class="sd">    time_series: (n_correlations) array_like</span>
+<span class="sd">        The array of correlation coefficients calculated by</span>
+<span class="sd">        FMF (float 32).</span>
+<span class="sd">    sliding_window: scalar integer</span>
+<span class="sd">        The size of the sliding window, in samples, used</span>
+<span class="sd">        to calculate the time dependent central tendency</span>
+<span class="sd">        and deviation of the time series.</span>
+<span class="sd">    overlap: scalar float, default to 0.66</span>
+<span class="sd">    threshold_type: string, default to &#39;rms&#39;</span>
+<span class="sd">        Either rms or mad, depending on which measure</span>
+<span class="sd">        of deviation you want to use.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    ----------</span>
+<span class="sd">    threshold: (n_correlations) array_like</span>
+<span class="sd">        Returns the time dependent threshold, with same</span>
+<span class="sd">        size as the input time series.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">time_series</span> <span class="o">=</span> <span class="n">time_series</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+    <span class="n">threshold_type</span> <span class="o">=</span> <span class="n">threshold_type</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+    <span class="n">n_samples</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">time_series</span><span class="p">)</span>
+    <span class="n">half_window</span> <span class="o">=</span> <span class="n">sliding_window</span> <span class="o">//</span> <span class="mi">2</span>
+    <span class="n">shift</span> <span class="o">=</span> <span class="nb">int</span><span class="p">((</span><span class="mf">1.0</span> <span class="o">-</span> <span class="n">overlap</span><span class="p">)</span> <span class="o">*</span> <span class="n">sliding_window</span><span class="p">)</span>
+    <span class="n">zeros</span> <span class="o">=</span> <span class="n">time_series</span> <span class="o">==</span> <span class="mf">0.0</span>
+    <span class="n">n_zeros</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">zeros</span><span class="p">)</span>
+    <span class="n">white_noise</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="n">size</span><span class="o">=</span><span class="n">n_zeros</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s2">&quot;float32&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">threshold_type</span> <span class="o">==</span> <span class="s2">&quot;rms&quot;</span><span class="p">:</span>
+        <span class="n">default_center</span> <span class="o">=</span> <span class="n">time_series</span><span class="p">[</span><span class="o">~</span><span class="n">zeros</span><span class="p">]</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
+        <span class="n">default_deviation</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">std</span><span class="p">(</span><span class="n">time_series</span><span class="p">[</span><span class="o">~</span><span class="n">zeros</span><span class="p">])</span>
+        <span class="c1"># note: white_noise[n_zeros] is necessary in case white_noise</span>
+        <span class="c1"># was not None</span>
+        <span class="n">time_series</span><span class="p">[</span><span class="n">zeros</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="n">white_noise</span><span class="p">[:</span><span class="n">n_zeros</span><span class="p">]</span> <span class="o">*</span> <span class="n">default_deviation</span> <span class="o">+</span> <span class="n">default_center</span>
+        <span class="p">)</span>
+        <span class="n">time_series_win</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">lib</span><span class="o">.</span><span class="n">stride_tricks</span><span class="o">.</span><span class="n">sliding_window_view</span><span class="p">(</span>
+            <span class="n">time_series</span><span class="p">,</span> <span class="n">sliding_window</span>
+        <span class="p">)[::</span><span class="n">shift</span><span class="p">,</span> <span class="p">:]</span>
+        <span class="n">center</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">time_series_win</span><span class="p">,</span> <span class="n">axis</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">deviation</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">std</span><span class="p">(</span><span class="n">time_series_win</span><span class="p">,</span> <span class="n">axis</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="n">threshold_type</span> <span class="o">==</span> <span class="s2">&quot;mad&quot;</span><span class="p">:</span>
+        <span class="n">default_center</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">median</span><span class="p">(</span><span class="n">time_series</span><span class="p">[</span><span class="o">~</span><span class="n">zeros</span><span class="p">])</span>
+        <span class="n">default_deviation</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">median</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">time_series</span><span class="p">[</span><span class="o">~</span><span class="n">zeros</span><span class="p">]</span> <span class="o">-</span> <span class="n">default_center</span><span class="p">))</span>
+        <span class="n">time_series</span><span class="p">[</span><span class="n">zeros</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="n">white_noise</span><span class="p">[:</span><span class="n">n_zeros</span><span class="p">]</span> <span class="o">*</span> <span class="n">default_deviation</span> <span class="o">+</span> <span class="n">default_center</span>
+        <span class="p">)</span>
+        <span class="n">time_series_win</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">lib</span><span class="o">.</span><span class="n">stride_tricks</span><span class="o">.</span><span class="n">sliding_window_view</span><span class="p">(</span>
+            <span class="n">time_series</span><span class="p">,</span> <span class="n">sliding_window</span>
+        <span class="p">)[::</span><span class="n">shift</span><span class="p">,</span> <span class="p">:]</span>
+        <span class="n">center</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">median</span><span class="p">(</span><span class="n">time_series_win</span><span class="p">,</span> <span class="n">axis</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">deviation</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">median</span><span class="p">(</span>
+            <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">time_series_win</span> <span class="o">-</span> <span class="n">center</span><span class="p">[:,</span> <span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">]),</span> <span class="n">axis</span><span class="o">=-</span><span class="mi">1</span>
+        <span class="p">)</span>
+    <span class="n">threshold</span> <span class="o">=</span> <span class="n">center</span> <span class="o">+</span> <span class="n">num_dev</span> <span class="o">*</span> <span class="n">deviation</span>
+    <span class="n">threshold</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">maximum</span><span class="p">(</span><span class="n">threshold</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">threshold</span><span class="p">[</span><span class="mi">1</span><span class="p">:])</span>
+    <span class="n">threshold</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">maximum</span><span class="p">(</span><span class="n">threshold</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">threshold</span><span class="p">[</span><span class="mi">1</span><span class="p">:])</span>
+    <span class="n">time</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">half_window</span><span class="p">,</span> <span class="n">n_samples</span> <span class="o">-</span> <span class="p">(</span><span class="n">sliding_window</span> <span class="o">-</span> <span class="n">half_window</span><span class="p">))</span>
+    <span class="n">indexes_l</span> <span class="o">=</span> <span class="n">time</span> <span class="o">//</span> <span class="n">shift</span>
+    <span class="n">indexes_l</span><span class="p">[</span><span class="n">indexes_l</span> <span class="o">&gt;=</span> <span class="nb">len</span><span class="p">(</span><span class="n">threshold</span><span class="p">)]</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">threshold</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span>
+    <span class="n">threshold</span> <span class="o">=</span> <span class="n">threshold</span><span class="p">[</span><span class="n">indexes_l</span><span class="p">]</span>
+    <span class="n">threshold</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">hstack</span><span class="p">(</span>
+        <span class="p">(</span>
+            <span class="n">threshold</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">half_window</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">),</span>
+            <span class="n">threshold</span><span class="p">,</span>
+            <span class="n">threshold</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">sliding_window</span> <span class="o">-</span> <span class="n">half_window</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">),</span>
+        <span class="p">)</span>
+    <span class="p">)</span>
+    <span class="k">return</span> <span class="n">threshold</span>
+<br/></pre></div>
+</div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[13]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># the detection threshold is evaluated in a sliding window with duration SLIDING_WINDOW_DURATION_SEC</span>
+<span class="n">SLIDING_WINDOW_DURATION_SEC</span> <span class="o">=</span> <span class="mf">7200.</span>
+<span class="c1"># within each sliding window, the detection threshold is the mean (median) + NUM_DEV the standard deviation (median absolute deviation)</span>
+<span class="n">NUM_DEV</span> <span class="o">=</span> <span class="mf">8.</span>
+
+<span class="c1"># compute the time-dependent detection threshold</span>
+<span class="n">window_length</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">SLIDING_WINDOW_DURATION_SEC</span> <span class="o">*</span> <span class="n">sampling_rate</span><span class="p">)</span>
+<span class="n">threshold</span> <span class="o">=</span> <span class="n">time_dependent_threshold</span><span class="p">(</span><span class="n">beam_max</span><span class="p">,</span> <span class="n">window_length</span><span class="p">,</span> <span class="n">num_dev</span><span class="o">=</span><span class="n">NUM_DEV</span><span class="p">,</span> <span class="n">threshold_type</span><span class="o">=</span><span class="s2">&quot;rms&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[14]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">MIN_DETECTION_INTERVAL</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="mi">60</span> <span class="o">*</span> <span class="n">sampling_rate</span><span class="p">)</span>
+
+<span class="c1"># Detect</span>
+<span class="n">peaks</span><span class="p">,</span> <span class="n">peak_properties</span> <span class="o">=</span> <span class="n">signal</span><span class="o">.</span><span class="n">find_peaks</span><span class="p">(</span><span class="n">beam_max</span><span class="p">,</span> <span class="n">distance</span><span class="o">=</span><span class="n">MIN_DETECTION_INTERVAL</span><span class="p">)</span>
+<span class="c1"># scipy&#39;s find_peaks function has a lot of interesting parameters you can play with. For example,</span>
+<span class="c1"># the &quot;prominence&quot; parameter may help discard flat peaks that are typical of when a single station</span>
+<span class="c1"># dominates a beam</span>
+<span class="c1"># peaks, peak_properties = signal.find_peaks(beam_max, distance=MIN_DETECTION_INTERVAL, prominence=50, wlen=int(1. * sampling_rate))</span>
+<span class="n">peaks</span> <span class="o">=</span> <span class="n">peaks</span><span class="p">[</span><span class="n">beam_max</span><span class="p">[</span><span class="n">peaks</span><span class="p">]</span> <span class="o">&gt;</span> <span class="n">threshold</span><span class="p">[</span><span class="n">peaks</span><span class="p">]]</span>
+
+<span class="c1"># Show</span>
+<span class="n">fig_beam</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="s2">&quot;beam&quot;</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">12</span><span class="p">,</span> <span class="mi">6</span><span class="p">))</span>
+
+<span class="n">times</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">to_datetime</span><span class="p">(</span><span class="n">traces</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">times</span><span class="p">(</span><span class="s2">&quot;timestamp&quot;</span><span class="p">)[:</span><span class="n">num_samples</span><span class="p">],</span> <span class="n">unit</span><span class="o">=</span><span class="s2">&quot;s&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+
+<span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">times</span><span class="p">,</span> <span class="n">beam_max</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">times</span><span class="p">,</span> <span class="n">threshold</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;r&quot;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">times</span><span class="p">[</span><span class="n">peaks</span><span class="p">],</span> <span class="n">beam_max</span><span class="p">[</span><span class="n">peaks</span><span class="p">],</span> <span class="n">marker</span><span class="o">=</span><span class="s2">&quot;o&quot;</span><span class="p">,</span> <span class="n">ls</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;r&quot;</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">&quot;Detections&quot;</span><span class="p">)</span>
+
+<span class="n">plt</span><span class="o">.</span><span class="n">semilogy</span><span class="p">()</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">ylim</span><span class="p">(</span><span class="n">bottom</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s2">&quot;Beam power&quot;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">grid</span><span class="p">()</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Detection of </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">peaks</span><span class="p">)</span><span class="si">}</span><span class="s2"> events&quot;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+
+<span class="n">fig_events</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="s2">&quot;epicenters&quot;</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">6</span><span class="p">,</span> <span class="mi">6</span><span class="p">))</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">source_coordinates</span><span class="p">[</span><span class="s2">&quot;longitude&quot;</span><span class="p">][</span><span class="n">beam_argmax</span><span class="p">[</span><span class="n">peaks</span><span class="p">]],</span> <span class="n">source_coordinates</span><span class="p">[</span><span class="s2">&quot;latitude&quot;</span><span class="p">][</span><span class="n">beam_argmax</span><span class="p">[</span><span class="n">peaks</span><span class="p">]],</span> <span class="s2">&quot;.r&quot;</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.25</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s2">&quot;Longitude (degrees)&quot;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s2">&quot;Latitude (degrees)&quot;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">grid</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../../_images/tutorial_notebooks_3_beampower_25_0.png" src="../../_images/tutorial_notebooks_3_beampower_25_0.png" />
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../../_images/tutorial_notebooks_3_beampower_25_1.png" src="../../_images/tutorial_notebooks_3_beampower_25_1.png" />
+</div>
+</div>
+</section>
+</section>
+<section id="Show-detection">
+<h2>Show detection<a class="headerlink" href="#Show-detection" title="Link to this heading"></a></h2>
+<p>We detect the maxima with find peaks and use a threshold criterion to keep only the prominent peaks (or events).</p>
+<section id="Plot-with-waveforms">
+<h3>Plot with waveforms<a class="headerlink" href="#Plot-with-waveforms" title="Link to this heading"></a></h3>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[15]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">COLORS</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;E&quot;</span><span class="p">:</span> <span class="s2">&quot;k&quot;</span><span class="p">,</span> <span class="s2">&quot;N&quot;</span><span class="p">:</span> <span class="s2">&quot;k&quot;</span><span class="p">,</span> <span class="s2">&quot;Z&quot;</span><span class="p">:</span> <span class="s2">&quot;C0&quot;</span><span class="p">}</span>
+
+<span class="k">def</span> <span class="nf">scale_amplitude</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">scale_factor</span><span class="o">=</span><span class="mf">1.0</span><span class="p">):</span>
+    <span class="n">x_norm</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">x</span><span class="p">))</span>
+    <span class="n">x_norm</span> <span class="o">=</span> <span class="mi">1</span> <span class="k">if</span> <span class="n">x_norm</span> <span class="o">==</span> <span class="mf">0.</span> <span class="k">else</span> <span class="n">x_norm</span>
+    <span class="n">x_log_norm</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">log10</span><span class="p">(</span><span class="n">x_norm</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">x</span> <span class="o">*</span> <span class="n">x_log_norm</span> <span class="o">*</span> <span class="n">scale_factor</span> <span class="o">/</span> <span class="n">x_norm</span>
+
+
+<span class="n">BUFFER_BEFORE_SAMPLES</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="mf">60.</span> <span class="o">*</span> <span class="n">sampling_rate</span><span class="p">)</span>
+<span class="n">BUFFER_AFTER_SAMPLES</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="mf">60.</span> <span class="o">*</span> <span class="n">sampling_rate</span><span class="p">)</span>
+
+<span class="n">peak_to_watch</span> <span class="o">=</span> <span class="n">peaks</span><span class="p">[</span><span class="mi">7</span><span class="p">]</span>
+<span class="c1"># peak_to_watch = peaks[8]</span>
+
+<span class="n">starttime_idx</span> <span class="o">=</span> <span class="n">peak_to_watch</span> <span class="o">-</span> <span class="n">BUFFER_BEFORE_SAMPLES</span>
+<span class="n">endtime_idx</span> <span class="o">=</span> <span class="n">peak_to_watch</span> <span class="o">+</span> <span class="n">BUFFER_AFTER_SAMPLES</span>
+<span class="n">slice_</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">s_</span><span class="p">[</span><span class="n">starttime_idx</span><span class="p">:</span><span class="n">endtime_idx</span><span class="p">]</span>
+
+<span class="n">peaks_in_zoom</span> <span class="o">=</span> <span class="n">peaks</span><span class="p">[</span>
+    <span class="p">(</span><span class="n">peaks</span> <span class="o">&gt;=</span> <span class="n">starttime_idx</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">peaks</span> <span class="o">&lt;=</span> <span class="n">endtime_idx</span><span class="p">)</span>
+<span class="p">]</span>
+
+<span class="n">inventory</span> <span class="o">=</span> <span class="n">read_inventory</span><span class="p">(</span><span class="n">DIRPATH_INVENTORY</span><span class="p">)</span>
+
+
+<span class="c1"># Show</span>
+<span class="n">fig</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">6</span><span class="p">))</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">times</span><span class="p">[</span><span class="n">slice_</span><span class="p">],</span> <span class="n">beam_max</span><span class="p">[</span><span class="n">slice_</span><span class="p">])</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">times</span><span class="p">[</span><span class="n">slice_</span><span class="p">],</span> <span class="n">threshold</span><span class="p">[</span><span class="n">slice_</span><span class="p">],</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;r&quot;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">times</span><span class="p">[</span><span class="n">peaks_in_zoom</span><span class="p">],</span> <span class="n">beam_max</span><span class="p">[</span><span class="n">peaks_in_zoom</span><span class="p">],</span> <span class="n">marker</span><span class="o">=</span><span class="s2">&quot;o&quot;</span><span class="p">,</span> <span class="n">ls</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;r&quot;</span><span class="p">)</span>
+<span class="c1"># plt.semilogy()</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">grid</span><span class="p">()</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s2">&quot;Beam power&quot;</span><span class="p">)</span>
+
+<span class="c1"># Watch peak</span>
+<span class="n">date</span> <span class="o">=</span> <span class="n">UTCDateTime</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">times</span><span class="p">[</span><span class="n">peak_to_watch</span><span class="p">]))</span>
+<span class="n">lon</span> <span class="o">=</span> <span class="n">source_coordinates</span><span class="p">[</span><span class="s2">&quot;longitude&quot;</span><span class="p">][</span><span class="n">beam_argmax</span><span class="p">[</span><span class="n">peak_to_watch</span><span class="p">]]</span>
+<span class="n">lat</span> <span class="o">=</span> <span class="n">source_coordinates</span><span class="p">[</span><span class="s2">&quot;latitude&quot;</span><span class="p">][</span><span class="n">beam_argmax</span><span class="p">[</span><span class="n">peak_to_watch</span><span class="p">]]</span>
+
+<span class="c1"># Get waveform</span>
+<span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">10</span><span class="p">))</span>
+<span class="k">for</span> <span class="n">index</span><span class="p">,</span> <span class="n">trace</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">read</span><span class="p">(</span><span class="n">DIRPATH_WAVEFORMS</span><span class="p">)):</span>
+
+    <span class="c1"># Get trace and info</span>
+    <span class="n">trace</span> <span class="o">=</span> <span class="n">trace</span><span class="o">.</span><span class="n">slice</span><span class="p">(</span><span class="n">date</span> <span class="o">-</span> <span class="mi">5</span><span class="p">,</span> <span class="n">date</span> <span class="o">+</span> <span class="mi">15</span><span class="p">)</span>
+    <span class="n">trace</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="nb">type</span><span class="o">=</span><span class="s2">&quot;highpass&quot;</span><span class="p">,</span> <span class="n">freq</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+    <span class="n">times_tr</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">to_datetime</span><span class="p">(</span><span class="n">trace</span><span class="o">.</span><span class="n">times</span><span class="p">(</span><span class="s2">&quot;timestamp&quot;</span><span class="p">),</span> <span class="n">unit</span><span class="o">=</span><span class="s2">&quot;s&quot;</span><span class="p">)</span>
+    <span class="n">data</span> <span class="o">=</span> <span class="n">scale_amplitude</span><span class="p">(</span><span class="n">trace</span><span class="o">.</span><span class="n">data</span><span class="p">,</span> <span class="n">scale_factor</span><span class="o">=</span><span class="mf">0.1</span><span class="p">)</span>
+
+
+
+    <span class="n">coords</span> <span class="o">=</span> <span class="n">inventory</span><span class="o">.</span><span class="n">get_coordinates</span><span class="p">(</span><span class="n">trace</span><span class="o">.</span><span class="n">id</span><span class="p">)</span>
+    <span class="n">p1</span> <span class="o">=</span> <span class="n">lat</span><span class="p">,</span> <span class="n">lon</span>
+    <span class="n">p2</span> <span class="o">=</span> <span class="p">[</span><span class="n">coords</span><span class="p">[</span><span class="n">dim</span><span class="p">]</span> <span class="k">for</span> <span class="n">dim</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;latitude&quot;</span><span class="p">,</span> <span class="s2">&quot;longitude&quot;</span><span class="p">]]</span>
+    <span class="n">distance</span> <span class="o">=</span> <span class="n">degrees2kilometers</span><span class="p">(</span><span class="n">locations2degrees</span><span class="p">(</span><span class="o">*</span><span class="n">p1</span><span class="p">,</span> <span class="o">*</span><span class="n">p2</span><span class="p">))</span>
+
+    <span class="c1"># Plot trace</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">times_tr</span><span class="p">,</span> <span class="n">data</span> <span class="o">+</span> <span class="n">distance</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="n">COLORS</span><span class="p">[</span><span class="n">trace</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">channel</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]],</span> <span class="n">lw</span><span class="o">=</span><span class="mf">0.75</span><span class="p">)</span>
+
+
+<span class="c1"># Labels</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s2">&quot;Epicentral distance (km)&quot;</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">axvline</span><span class="p">(</span><span class="n">date</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;C3&quot;</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">legend</span><span class="p">([</span><span class="n">key</span> <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">COLORS</span><span class="p">])</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[15]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+&lt;matplotlib.legend.Legend at 0x7f36174e9cc0&gt;
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../../_images/tutorial_notebooks_3_beampower_28_1.png" src="../../_images/tutorial_notebooks_3_beampower_28_1.png" />
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../../_images/tutorial_notebooks_3_beampower_28_2.png" src="../../_images/tutorial_notebooks_3_beampower_28_2.png" />
+</div>
+</div>
+</section>
+<section id="Plot-with-envelopes">
+<h3>Plot with envelopes<a class="headerlink" href="#Plot-with-envelopes" title="Link to this heading"></a></h3>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[16]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">COLORS</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;E&quot;</span><span class="p">:</span> <span class="s2">&quot;k&quot;</span><span class="p">,</span> <span class="s2">&quot;N&quot;</span><span class="p">:</span> <span class="s2">&quot;k&quot;</span><span class="p">,</span> <span class="s2">&quot;Z&quot;</span><span class="p">:</span> <span class="s2">&quot;C0&quot;</span><span class="p">}</span>
+
+<span class="k">def</span> <span class="nf">scale_amplitude</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">scale_factor</span><span class="o">=</span><span class="mf">1.0</span><span class="p">):</span>
+    <span class="n">x_norm</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">x</span><span class="p">))</span>
+    <span class="n">x_norm</span> <span class="o">=</span> <span class="mi">1</span> <span class="k">if</span> <span class="n">x_norm</span> <span class="o">==</span> <span class="mf">0.</span> <span class="k">else</span> <span class="n">x_norm</span>
+    <span class="n">x_log_norm</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">log10</span><span class="p">(</span><span class="n">x_norm</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">x</span> <span class="o">*</span> <span class="n">x_log_norm</span> <span class="o">*</span> <span class="n">scale_factor</span> <span class="o">/</span> <span class="n">x_norm</span>
+
+
+<span class="n">BUFFER_BEFORE_SAMPLES</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="mf">60.</span> <span class="o">*</span> <span class="n">sampling_rate</span><span class="p">)</span>
+<span class="n">BUFFER_AFTER_SAMPLES</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="mf">60.</span> <span class="o">*</span> <span class="n">sampling_rate</span><span class="p">)</span>
+
+<span class="n">peak_to_watch</span> <span class="o">=</span> <span class="n">peaks</span><span class="p">[</span><span class="mi">7</span><span class="p">]</span>
+<span class="c1"># peak_to_watch = peaks[8]</span>
+
+<span class="n">starttime_idx</span> <span class="o">=</span> <span class="n">peak_to_watch</span> <span class="o">-</span> <span class="n">BUFFER_BEFORE_SAMPLES</span>
+<span class="n">endtime_idx</span> <span class="o">=</span> <span class="n">peak_to_watch</span> <span class="o">+</span> <span class="n">BUFFER_AFTER_SAMPLES</span>
+<span class="n">slice_</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">s_</span><span class="p">[</span><span class="n">starttime_idx</span><span class="p">:</span><span class="n">endtime_idx</span><span class="p">]</span>
+
+<span class="n">peaks_in_zoom</span> <span class="o">=</span> <span class="n">peaks</span><span class="p">[</span>
+    <span class="p">(</span><span class="n">peaks</span> <span class="o">&gt;=</span> <span class="n">starttime_idx</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">peaks</span> <span class="o">&lt;=</span> <span class="n">endtime_idx</span><span class="p">)</span>
+<span class="p">]</span>
+
+<span class="n">inventory</span> <span class="o">=</span> <span class="n">read_inventory</span><span class="p">(</span><span class="n">DIRPATH_INVENTORY</span><span class="p">)</span>
+
+
+<span class="c1"># Show</span>
+<span class="n">fig</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">6</span><span class="p">))</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">times</span><span class="p">[</span><span class="n">slice_</span><span class="p">],</span> <span class="n">beam_max</span><span class="p">[</span><span class="n">slice_</span><span class="p">])</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">times</span><span class="p">[</span><span class="n">slice_</span><span class="p">],</span> <span class="n">threshold</span><span class="p">[</span><span class="n">slice_</span><span class="p">],</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;r&quot;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">times</span><span class="p">[</span><span class="n">peaks_in_zoom</span><span class="p">],</span> <span class="n">beam_max</span><span class="p">[</span><span class="n">peaks_in_zoom</span><span class="p">],</span> <span class="n">marker</span><span class="o">=</span><span class="s2">&quot;o&quot;</span><span class="p">,</span> <span class="n">ls</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;r&quot;</span><span class="p">)</span>
+<span class="c1"># plt.semilogy()</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">grid</span><span class="p">()</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s2">&quot;Beam power&quot;</span><span class="p">)</span>
+
+<span class="c1"># Watch peak</span>
+<span class="n">date</span> <span class="o">=</span> <span class="n">UTCDateTime</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">times</span><span class="p">[</span><span class="n">peak_to_watch</span><span class="p">]))</span>
+<span class="n">lon</span> <span class="o">=</span> <span class="n">source_coordinates</span><span class="p">[</span><span class="s2">&quot;longitude&quot;</span><span class="p">][</span><span class="n">beam_argmax</span><span class="p">[</span><span class="n">peak_to_watch</span><span class="p">]]</span>
+<span class="n">lat</span> <span class="o">=</span> <span class="n">source_coordinates</span><span class="p">[</span><span class="s2">&quot;latitude&quot;</span><span class="p">][</span><span class="n">beam_argmax</span><span class="p">[</span><span class="n">peak_to_watch</span><span class="p">]]</span>
+
+
+<span class="c1"># Plot waveform feature</span>
+<span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">10</span><span class="p">))</span>
+<span class="n">starttime_idx</span> <span class="o">=</span> <span class="nb">int</span><span class="p">((</span><span class="n">date</span> <span class="o">-</span> <span class="mf">5.</span> <span class="o">-</span> <span class="n">traces</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">starttime</span><span class="p">)</span> <span class="o">/</span> <span class="n">traces</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">delta</span><span class="p">)</span>
+<span class="n">endtime_idx</span> <span class="o">=</span> <span class="nb">int</span><span class="p">((</span><span class="n">date</span> <span class="o">+</span> <span class="mf">15.</span> <span class="o">-</span> <span class="n">traces</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">starttime</span><span class="p">)</span> <span class="o">/</span> <span class="n">traces</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">delta</span><span class="p">)</span>
+<span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">num_stations</span><span class="p">):</span>
+
+    <span class="n">p1</span> <span class="o">=</span> <span class="n">lat</span><span class="p">,</span> <span class="n">lon</span>
+    <span class="n">p2</span> <span class="o">=</span> <span class="p">[</span><span class="n">network</span><span class="o">.</span><span class="n">latitude</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="n">s</span><span class="p">],</span> <span class="n">network</span><span class="o">.</span><span class="n">longitude</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="n">s</span><span class="p">]]</span>
+    <span class="n">distance</span> <span class="o">=</span> <span class="n">degrees2kilometers</span><span class="p">(</span><span class="n">locations2degrees</span><span class="p">(</span><span class="o">*</span><span class="n">p1</span><span class="p">,</span> <span class="o">*</span><span class="n">p2</span><span class="p">))</span>
+
+    <span class="k">for</span> <span class="n">c</span><span class="p">,</span> <span class="n">cp</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">COMPONENTS</span><span class="p">):</span>
+
+        <span class="n">data</span> <span class="o">=</span> <span class="n">waveform_features</span><span class="p">[</span><span class="n">s</span><span class="p">,</span> <span class="n">c</span><span class="p">,</span> <span class="n">starttime_idx</span><span class="p">:</span><span class="n">endtime_idx</span><span class="p">]</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="n">scale_amplitude</span><span class="p">(</span><span class="n">data</span> <span class="o">+</span> <span class="n">data</span><span class="o">.</span><span class="n">min</span><span class="p">(),</span> <span class="n">scale_factor</span><span class="o">=</span><span class="mf">0.1</span><span class="p">)</span>
+        <span class="n">times_tr</span> <span class="o">=</span> <span class="n">times</span><span class="p">[</span><span class="n">starttime_idx</span><span class="p">:</span><span class="n">endtime_idx</span><span class="p">]</span>
+
+        <span class="c1"># Plot trace</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">times_tr</span><span class="p">,</span> <span class="n">data</span> <span class="o">+</span> <span class="n">distance</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="n">COLORS</span><span class="p">[</span><span class="n">cp</span><span class="p">],</span> <span class="n">lw</span><span class="o">=</span><span class="mf">0.75</span><span class="p">)</span>
+
+
+<span class="c1"># Labels</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s2">&quot;Epicentral distance (km)&quot;</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">axvline</span><span class="p">(</span><span class="n">date</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;C3&quot;</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">legend</span><span class="p">([</span><span class="n">key</span> <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">COLORS</span><span class="p">])</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[16]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+&lt;matplotlib.legend.Legend at 0x7f3617251fc0&gt;
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../../_images/tutorial_notebooks_3_beampower_30_1.png" src="../../_images/tutorial_notebooks_3_beampower_30_1.png" />
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../../_images/tutorial_notebooks_3_beampower_30_2.png" src="../../_images/tutorial_notebooks_3_beampower_30_2.png" />
+</div>
+</div>
+</section>
+</section>
+<section id="Going-further">
+<h2>Going further<a class="headerlink" href="#Going-further" title="Link to this heading"></a></h2>
+<p>In this tutorial, we have explored a simple application of <code class="docutils literal notranslate"><span class="pre">beampower</span></code> to design an earthquake detection and location workflow. To go beyond testing, you will need to design a more sophisticated workflow. In particular, you may want to improve the following points:</p>
+<ul class="simple">
+<li><p>Use a more appropriate waveform transform than the envelope. Envelopes are noisy and extremely sensitive to transient noise (even when clipping very high amplitudes, like here) therefore the envelope-based beam is also very noisy. Moreover, envelope maxima tend to occur <em>after</em> the first P- or S-wave arrival although, when computing a beam, we’re implicitly making the assumption that the largest amplitude beam is the one that perfectly picks the first arrivals. Thus, envelope-based beams
+cannot provide very accurate earthquake locations. You may explore beamforming STA/LTA or a running kurtosis, which gives more importance to the first arrivals.</p></li>
+<li><p>When dealing with a noisy beam, like in this example, you may design a smarter beam processing algorithm than the one shown here to detect earthquakes. For example, <code class="docutils literal notranslate"><span class="pre">scipy.signal.find_peaks</span></code> has lots of parameters to tune (e.g., the prominence or width of the peaks). You may also try to filter the beam.</p></li>
+</ul>
+<p>If you’re interested in a comprehensive earthquake detection and location workflow that includes <code class="docutils literal notranslate"><span class="pre">beampower</span></code>, you can check out our <code class="docutils literal notranslate"><span class="pre">BPMF</span></code> package:</p>
+<ul class="simple">
+<li><p>Github: <a class="reference external" href="https://github.com/ebeauce/Seismic_BPMF">https://github.com/ebeauce/Seismic_BPMF</a></p></li>
+<li><p>Documentation and tutorial: <a class="reference external" href="https://ebeauce.github.io/Seismic_BPMF/tutorial.html">https://ebeauce.github.io/Seismic_BPMF/tutorial.html</a></p></li>
+</ul>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="2_travel_times.html" class="btn btn-neutral float-left" title="2. Compute travel times" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="../../updates.html" class="btn btn-neutral float-right" title="Updates" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, Eric Beauce, William B. Frank and Leonard Seydoux.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

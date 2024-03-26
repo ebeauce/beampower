@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>1. Preprocess seismic waveforms &mdash; beampower 1.0.1 documentation</title>
+      <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/nbsphinx-code-cells.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+        <script src="../../_static/documentation_options.js?v=292eb321"></script>
+        <script src="../../_static/doctools.js?v=888ff710"></script>
+        <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+        <script>window.MathJax = {"tex": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true}, "options": {"ignoreHtmlClass": "tex2jax_ignore|mathjax_ignore|document", "processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+        <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="2. Compute travel times" href="2_travel_times.html" />
+    <link rel="prev" title="0. Download seismograms" href="0_download.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            beampower
+              <img src="../../_static/logo.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../introduction.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../usage.html">Usage</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../../tutorial.html">Tutorial</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../general.html">Pre-requisites</a></li>
+<li class="toctree-l2"><a class="reference internal" href="0_download.html">0. Download seismograms</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">1. Preprocess seismic waveforms</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#Contents">Contents</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#Read-and-destination-paths">Read and destination paths</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#Show-an-example-raw-trace">Show an example raw trace</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#Preprocess">Preprocess</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#Compare-raw-and-processed-traces">Compare raw and processed traces</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="2_travel_times.html">2. Compute travel times</a></li>
+<li class="toctree-l2"><a class="reference internal" href="3_beampower.html">3. Beamforming for location</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../updates.html">Updates</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">beampower</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../tutorial.html">Tutorial</a></li>
+      <li class="breadcrumb-item active">1. Preprocess seismic waveforms</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../../_sources/tutorial/notebooks/1_preprocess.ipynb.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="1.-Preprocess-seismic-waveforms">
+<h1>1. Preprocess seismic waveforms<a class="headerlink" href="#1.-Preprocess-seismic-waveforms" title="Link to this heading"></a></h1>
+<p>An essential step before detecting and locating earthquakes is the adequate preprocessing of the seismic data. Preprocessing addresses specific needs for a given data set and task and, thus, cannot be straightforwardly generalized to new data sets. Preprocessing workflows must remain as simple as possible. The preprocessing steps taken in this notebook are given as an example and should not be blindly reproduced on other data sets.</p>
+<section id="Contents">
+<h2>Contents<a class="headerlink" href="#Contents" title="Link to this heading"></a></h2>
+<ul class="simple">
+<li><p><a class="reference internal" href="#Read-and-destination-paths"><span class="std std-ref">Read and destination paths</span></a></p></li>
+<li><p><a class="reference internal" href="#Show-an-example-raw-trace"><span class="std std-ref">Show an example raw trace</span></a></p></li>
+<li><p>Process</p></li>
+<li><p><a class="reference internal" href="#Compare-raw-and-processed-traces"><span class="std std-ref">Compare raw and processed trace</span></a></p></li>
+</ul>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[43]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">obspy</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">tqdm</span>
+
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+
+<span class="kn">from</span> <span class="nn">glob</span> <span class="kn">import</span> <span class="n">glob</span>
+</pre></div>
+</div>
+</div>
+<section id="Read-and-destination-paths">
+<h3>Read and destination paths<a class="headerlink" href="#Read-and-destination-paths" title="Link to this heading"></a></h3>
+<p>First, we define the path from which we read the raw data and save the preprocessed data. Also extract the path to all input waveforms.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[44]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">DIRPATH_RAW</span> <span class="o">=</span> <span class="s2">&quot;../data/raw/&quot;</span>
+<span class="n">DIRPATH_PROCESSED</span> <span class="o">=</span> <span class="s2">&quot;../data/processed/&quot;</span>
+</pre></div>
+</div>
+</div>
+<p>Again create directory if needed and copy the metadata therein.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[45]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Create directory</span>
+<span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">DIRPATH_PROCESSED</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+<span class="c1"># Copy meta to destination</span>
+<span class="o">!</span>cp<span class="w"> </span><span class="o">{</span>DIRPATH_RAW<span class="o">}</span>*xml<span class="w"> </span><span class="o">{</span>DIRPATH_PROCESSED<span class="o">}</span>
+</pre></div>
+</div>
+</div>
+</section>
+<section id="Show-an-example-raw-trace">
+<h3>Show an example raw trace<a class="headerlink" href="#Show-an-example-raw-trace" title="Link to this heading"></a></h3>
+<p>We collect all available waveform files to manipulate them afterward.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[46]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">filepaths_raw</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">glob</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">DIRPATH_RAW</span><span class="p">,</span> <span class="s2">&quot;*.mseed&quot;</span><span class="p">)))</span>
+</pre></div>
+</div>
+</div>
+<p>Using <code class="docutils literal notranslate"><span class="pre">obspy</span></code>, we can visualize the waveforms. In the following cell, the selected waveform has not been preprocessed yet: the amplitudes are in counts (signed integers) and the waveform exhibits low-frequency components, especially with a day-long period. Note that, here, we do not show the earthquake itself to see the ambient noise better.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[47]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">stream</span> <span class="o">=</span> <span class="n">obspy</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="n">filepaths_raw</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+<span class="n">stream</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">size</span><span class="o">=</span><span class="p">(</span><span class="mi">600</span><span class="p">,</span> <span class="mi">250</span><span class="p">),</span> <span class="n">show</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">gcf</span><span class="p">()</span><span class="o">.</span><span class="n">set_facecolor</span><span class="p">(</span><span class="s1">&#39;w&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../../_images/tutorial_notebooks_1_preprocess_9_0.png" src="../../_images/tutorial_notebooks_1_preprocess_9_0.png" />
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+&lt;Figure size 640x480 with 0 Axes&gt;
+</pre></div></div>
+</div>
+</section>
+<section id="Preprocess">
+<h3>Preprocess<a class="headerlink" href="#Preprocess" title="Link to this heading"></a></h3>
+<p>The next cell loads every waveform and applies the preprocessing workflow, which includes detrending individual segments, filling gaps over the entire day, synchronizing the traces on the requested start and end times, resampling at the target sampling rate and removing the instrument gain. This cell runs in about 3 minutes on a desktop machine.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[48]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">TARGET_SAMPLING_RATE</span> <span class="o">=</span> <span class="mf">25.0</span>
+<span class="n">MINIMUM_CHUNK_DURATION_SEC</span> <span class="o">=</span> <span class="mf">1800.</span>
+<span class="n">FREQ_MIN</span> <span class="o">=</span> <span class="mf">2.0</span>
+<span class="n">FREQ_MAX</span> <span class="o">=</span> <span class="mf">12.0</span>
+<span class="n">TAPER_PERCENT</span> <span class="o">=</span> <span class="mf">0.02</span>
+<span class="n">TAPER_TYPE</span> <span class="o">=</span> <span class="s2">&quot;cosine&quot;</span>
+<span class="n">MSEED_ENCODING</span> <span class="o">=</span> <span class="s2">&quot;FLOAT64&quot;</span>
+<span class="n">TARGET_STARTTIME</span> <span class="o">=</span> <span class="n">obspy</span><span class="o">.</span><span class="n">UTCDateTime</span><span class="p">(</span><span class="s2">&quot;2012-07-26&quot;</span><span class="p">)</span>
+<span class="n">TARGET_ENDTIME</span> <span class="o">=</span> <span class="n">obspy</span><span class="o">.</span><span class="n">UTCDateTime</span><span class="p">(</span><span class="s2">&quot;2012-07-27&quot;</span><span class="p">)</span>
+
+<span class="k">for</span> <span class="n">filepath_waveform</span> <span class="ow">in</span> <span class="n">tqdm</span><span class="o">.</span><span class="n">tqdm</span><span class="p">(</span><span class="n">filepaths_raw</span><span class="p">,</span> <span class="n">desc</span><span class="o">=</span><span class="s2">&quot;Processing data&quot;</span><span class="p">):</span>
+
+    <span class="c1"># Read trace</span>
+    <span class="n">trace</span> <span class="o">=</span> <span class="n">obspy</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="n">filepath_waveform</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+
+    <span class="c1"># Split trace into segments to process them individually</span>
+    <span class="n">stream</span> <span class="o">=</span> <span class="n">trace</span><span class="o">.</span><span class="n">split</span><span class="p">()</span>
+    <span class="k">for</span> <span class="n">chunk</span> <span class="ow">in</span> <span class="n">stream</span><span class="p">:</span>
+        <span class="n">t1</span> <span class="o">=</span> <span class="n">obspy</span><span class="o">.</span><span class="n">UTCDateTime</span><span class="p">(</span><span class="n">chunk</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">starttime</span><span class="o">.</span><span class="n">timestamp</span><span class="p">)</span>
+        <span class="n">t2</span> <span class="o">=</span> <span class="n">obspy</span><span class="o">.</span><span class="n">UTCDateTime</span><span class="p">(</span><span class="n">chunk</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">endtime</span><span class="o">.</span><span class="n">timestamp</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">t2</span> <span class="o">-</span> <span class="n">t1</span> <span class="o">&lt;</span> <span class="n">MINIMUM_CHUNK_DURATION_SEC</span><span class="p">:</span>
+            <span class="c1"># don&#39;t include this chunk</span>
+            <span class="n">stream</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">chunk</span><span class="p">)</span>
+
+
+    <span class="c1"># Apply detrend on segments</span>
+    <span class="n">stream</span><span class="o">.</span><span class="n">detrend</span><span class="p">(</span><span class="s2">&quot;constant&quot;</span><span class="p">)</span>
+    <span class="n">stream</span><span class="o">.</span><span class="n">detrend</span><span class="p">(</span><span class="s2">&quot;linear&quot;</span><span class="p">)</span>
+    <span class="n">stream</span><span class="o">.</span><span class="n">taper</span><span class="p">(</span><span class="n">TAPER_PERCENT</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="n">TAPER_TYPE</span><span class="p">)</span>
+
+    <span class="c1"># Merge traces, filling gaps with zeros and imposing start and end times</span>
+    <span class="n">stream</span> <span class="o">=</span> <span class="n">stream</span><span class="o">.</span><span class="n">merge</span><span class="p">(</span><span class="n">fill_value</span><span class="o">=</span><span class="mf">0.0</span><span class="p">)</span>
+    <span class="n">trace</span> <span class="o">=</span> <span class="n">stream</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">trace</span><span class="o">.</span><span class="n">trim</span><span class="p">(</span><span class="n">starttime</span><span class="o">=</span><span class="n">TARGET_STARTTIME</span><span class="p">,</span> <span class="n">endtime</span><span class="o">=</span><span class="n">TARGET_ENDTIME</span><span class="p">,</span> <span class="n">pad</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">fill_value</span><span class="o">=</span><span class="mf">0.0</span><span class="p">)</span>
+
+    <span class="c1"># Resample at target sampling rate</span>
+    <span class="n">trace</span><span class="o">.</span><span class="n">resample</span><span class="p">(</span><span class="n">TARGET_SAMPLING_RATE</span><span class="p">)</span>
+
+    <span class="c1"># Attach instrument response</span>
+    <span class="n">filepath_inventory</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">trace</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">network</span><span class="si">}</span><span class="s2">.</span><span class="si">{</span><span class="n">trace</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">station</span><span class="si">}</span><span class="s2">.xml&quot;</span>
+    <span class="n">filepath_inventory</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">DIRPATH_RAW</span><span class="p">,</span> <span class="n">filepath_inventory</span><span class="p">)</span>
+    <span class="n">inventory</span> <span class="o">=</span> <span class="n">obspy</span><span class="o">.</span><span class="n">read_inventory</span><span class="p">(</span><span class="n">filepath_inventory</span><span class="p">)</span>
+    <span class="n">trace</span><span class="o">.</span><span class="n">attach_response</span><span class="p">(</span><span class="n">inventory</span><span class="p">)</span>
+
+    <span class="c1"># Remove instrument gain</span>
+    <span class="n">trace</span><span class="o">.</span><span class="n">remove_sensitivity</span><span class="p">()</span>
+
+    <span class="c1"># Detrend</span>
+    <span class="n">trace</span><span class="o">.</span><span class="n">detrend</span><span class="p">(</span><span class="s2">&quot;constant&quot;</span><span class="p">)</span>
+    <span class="n">trace</span><span class="o">.</span><span class="n">detrend</span><span class="p">(</span><span class="s2">&quot;linear&quot;</span><span class="p">)</span>
+    <span class="n">trace</span><span class="o">.</span><span class="n">taper</span><span class="p">(</span><span class="n">TAPER_PERCENT</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="n">TAPER_TYPE</span><span class="p">)</span>
+
+    <span class="c1"># Filter</span>
+    <span class="n">trace</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span>
+        <span class="s2">&quot;bandpass&quot;</span><span class="p">,</span> <span class="n">freqmin</span><span class="o">=</span><span class="n">FREQ_MIN</span><span class="p">,</span> <span class="n">freqmax</span><span class="o">=</span><span class="n">FREQ_MAX</span><span class="p">,</span> <span class="n">zerophase</span><span class="o">=</span><span class="kc">True</span>
+    <span class="p">)</span>
+    <span class="n">trace</span><span class="o">.</span><span class="n">taper</span><span class="p">(</span><span class="n">TAPER_PERCENT</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="n">TAPER_TYPE</span><span class="p">)</span>
+
+    <span class="c1"># Write processed traces</span>
+    <span class="n">_</span><span class="p">,</span> <span class="n">filename</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">filepath_waveform</span><span class="p">)</span>
+    <span class="n">filepath_processed_waveform</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">DIRPATH_PROCESSED</span><span class="p">,</span> <span class="n">filename</span><span class="p">)</span>
+    <span class="n">trace</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">filepath_processed_waveform</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="n">MSEED_ENCODING</span><span class="p">)</span>
+<br/></pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+Processing data:   0%|          | 0/24 [00:00&lt;?, ?it/s]
+</pre></div></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+Processing data: 100%|██████████| 24/24 [01:18&lt;00:00,  3.26s/it]
+</pre></div></div>
+</div>
+</section>
+<section id="Compare-raw-and-processed-traces">
+<h3>Compare raw and processed traces<a class="headerlink" href="#Compare-raw-and-processed-traces" title="Link to this heading"></a></h3>
+<p>After the preprocessing, we see that the low-frequency components were filtered out as a result of the bandpass filter, and we see that the waveform amplitude is units of velocity (m/s). Impulsive signals are also more visible.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[53]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Get a file to read</span>
+<span class="n">filepath_raw</span> <span class="o">=</span> <span class="n">filepaths_raw</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
+<span class="n">filename_raw</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">filepath_raw</span><span class="p">)</span>
+<span class="n">filepath_processed</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">DIRPATH_PROCESSED</span><span class="p">,</span> <span class="n">filename_raw</span><span class="p">)</span>
+
+<span class="c1"># Loop over cases and show</span>
+<span class="k">for</span> <span class="n">filepath</span> <span class="ow">in</span> <span class="p">(</span><span class="n">filepath_raw</span><span class="p">,</span> <span class="n">filepath_processed</span><span class="p">):</span>
+    <span class="n">stream</span> <span class="o">=</span> <span class="n">obspy</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="n">filepath</span><span class="p">)</span>
+    <span class="n">stream</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">12</span><span class="p">,</span> <span class="mi">6</span><span class="p">),</span> <span class="n">show</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../../_images/tutorial_notebooks_1_preprocess_13_0.png" src="../../_images/tutorial_notebooks_1_preprocess_13_0.png" />
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../../_images/tutorial_notebooks_1_preprocess_13_1.png" src="../../_images/tutorial_notebooks_1_preprocess_13_1.png" />
+</div>
+</div>
+<p>Data are never perfect… Check out station DE07, which came with a huge anomaly shortly before 4am.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[59]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Get a file to read</span>
+<span class="n">filepath_raw</span> <span class="o">=</span> <span class="n">filepaths_raw</span><span class="p">[</span><span class="mi">12</span><span class="p">]</span>
+<span class="n">filename_raw</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">filepath_raw</span><span class="p">)</span>
+<span class="n">filepath_processed</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">DIRPATH_PROCESSED</span><span class="p">,</span> <span class="n">filename_raw</span><span class="p">)</span>
+
+<span class="c1"># Loop over cases and show</span>
+<span class="k">for</span> <span class="n">filepath</span> <span class="ow">in</span> <span class="p">(</span><span class="n">filepath_raw</span><span class="p">,</span> <span class="n">filepath_processed</span><span class="p">):</span>
+    <span class="n">stream</span> <span class="o">=</span> <span class="n">obspy</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="n">filepath</span><span class="p">)</span>
+    <span class="n">stream</span> <span class="o">=</span> <span class="n">stream</span><span class="o">.</span><span class="n">slice</span><span class="p">(</span>
+        <span class="n">starttime</span><span class="o">=</span><span class="n">obspy</span><span class="o">.</span><span class="n">UTCDateTime</span><span class="p">(</span><span class="s2">&quot;2012-07-26T03:50:00&quot;</span><span class="p">),</span> <span class="n">endtime</span><span class="o">=</span><span class="n">obspy</span><span class="o">.</span><span class="n">UTCDateTime</span><span class="p">(</span><span class="s2">&quot;2012-07-26T03:52:00&quot;</span><span class="p">)</span>
+    <span class="p">)</span>
+    <span class="n">stream</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">12</span><span class="p">,</span> <span class="mi">6</span><span class="p">),</span> <span class="n">method</span><span class="o">=</span><span class="s2">&quot;full&quot;</span><span class="p">,</span> <span class="n">show</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../../_images/tutorial_notebooks_1_preprocess_15_0.png" src="../../_images/tutorial_notebooks_1_preprocess_15_0.png" />
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../../_images/tutorial_notebooks_1_preprocess_15_1.png" src="../../_images/tutorial_notebooks_1_preprocess_15_1.png" />
+</div>
+</div>
+</section>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="0_download.html" class="btn btn-neutral float-left" title="0. Download seismograms" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="2_travel_times.html" class="btn btn-neutral float-right" title="2. Compute travel times" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, Eric Beauce, William B. Frank and Leonard Seydoux.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

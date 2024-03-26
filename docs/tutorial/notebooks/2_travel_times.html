@@ -1,0 +1,910 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>2. Compute travel times &mdash; beampower 1.0.1 documentation</title>
+      <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/nbsphinx-code-cells.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+        <script src="../../_static/documentation_options.js?v=292eb321"></script>
+        <script src="../../_static/doctools.js?v=888ff710"></script>
+        <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+        <script>window.MathJax = {"tex": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true}, "options": {"ignoreHtmlClass": "tex2jax_ignore|mathjax_ignore|document", "processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+        <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="3. Beamforming for location" href="3_beampower.html" />
+    <link rel="prev" title="1. Preprocess seismic waveforms" href="1_preprocess.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            beampower
+              <img src="../../_static/logo.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../introduction.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../usage.html">Usage</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../../tutorial.html">Tutorial</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../general.html">Pre-requisites</a></li>
+<li class="toctree-l2"><a class="reference internal" href="0_download.html">0. Download seismograms</a></li>
+<li class="toctree-l2"><a class="reference internal" href="1_preprocess.html">1. Preprocess seismic waveforms</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">2. Compute travel times</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#Contents">Contents</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#Read-velocity-model">Read velocity model</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#Interpolate-velocity-model-at-depth">Interpolate velocity model at depth</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#Expand-model-laterally">Expand model laterally</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#Station-coordinates">Station coordinates</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#Show-model-and-stations">Show model and stations</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#Compute-travel-times">Compute travel times</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#Save-travel-times-and-grid-coordinates">Save travel times and grid coordinates</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#Show-travel-times-at-a-given-station">Show travel times at a given station</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="3_beampower.html">3. Beamforming for location</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../updates.html">Updates</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">beampower</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../tutorial.html">Tutorial</a></li>
+      <li class="breadcrumb-item active">2. Compute travel times</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../../_sources/tutorial/notebooks/2_travel_times.ipynb.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="2.-Compute-travel-times">
+<h1>2. Compute travel times<a class="headerlink" href="#2.-Compute-travel-times" title="Link to this heading"></a></h1>
+<p>This notebook computes the travel times from all the points of a three-dimensional grid to each seismic station. These travel times are necessary for time-shifting the seismic traces when evaluating the beamformed network response at every location of the grid.</p>
+<p>This tutorial utilizes the <code class="docutils literal notranslate"><span class="pre">pykonal</span></code> package to compute travel times given a velocity model. The package documentation and installation procedure are described in the <a class="reference external" href="https://github.com/malcolmw/pykonal">pykonal package documentation</a>. Please acknowledge <a class="reference external" href="https://pubs.geoscienceworld.org/ssa/srl/article-abstract/91/4/2378/586804/PyKonal-A-Python-Package-for-Solving-the-Eikonal?redirectedFrom=fulltext">White et al. (2020)</a> if using <code class="docutils literal notranslate"><span class="pre">pykonal</span></code>.</p>
+<blockquote>
+<div><p><strong>Note:</strong> although <code class="docutils literal notranslate"><span class="pre">pykonal</span></code> handles computing the travel times in a three-dimensional velocity model, the example below uses a one-dimensional velocity model.</p>
+</div></blockquote>
+<section id="Contents">
+<h2>Contents<a class="headerlink" href="#Contents" title="Link to this heading"></a></h2>
+<ul class="simple">
+<li><p><a class="reference internal" href="#Read-velocity-model"><span class="std std-ref">Read velocity model</span></a></p></li>
+<li><p><a class="reference internal" href="#Interpolate-velocity-model-at-depth"><span class="std std-ref">Interpolate velocity model at depth</span></a></p></li>
+<li><p><a class="reference internal" href="#Expand-model-laterally"><span class="std std-ref">Expand model laterally</span></a></p></li>
+<li><p><a class="reference internal" href="#Station-coordinates"><span class="std std-ref">Get station coordinates</span></a></p></li>
+<li><p><a class="reference internal" href="#Show-model-and-stations"><span class="std std-ref">Show model and stations</span></a></p></li>
+<li><p><a class="reference internal" href="#Compute-travel-times"><span class="std std-ref">Compute travel times</span></a></p></li>
+<li><p>Save travel times</p></li>
+<li><p><a class="reference internal" href="#Show-travel-times-at-a-given-station"><span class="std std-ref">Show travel times at a given station</span></a></p></li>
+</ul>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[2]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">h5py</span> <span class="k">as</span> <span class="nn">h5</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+<span class="kn">import</span> <span class="nn">tqdm</span>
+
+<span class="kn">from</span> <span class="nn">matplotlib</span> <span class="kn">import</span> <span class="n">pyplot</span> <span class="k">as</span> <span class="n">plt</span>
+
+<span class="kn">from</span> <span class="nn">obspy</span> <span class="kn">import</span> <span class="n">read</span><span class="p">,</span> <span class="n">read_inventory</span>
+<span class="kn">from</span> <span class="nn">pykonal.solver</span> <span class="kn">import</span> <span class="n">PointSourceSolver</span>
+<span class="kn">from</span> <span class="nn">pykonal.transformations</span> <span class="kn">import</span> <span class="n">geo2sph</span>
+</pre></div>
+</div>
+</div>
+</section>
+<section id="Read-velocity-model">
+<h2>Read velocity model<a class="headerlink" href="#Read-velocity-model" title="Link to this heading"></a></h2>
+<p>We wrote the velocity model of <a class="reference external" href="https://www.sciencedirect.com/science/article/pii/S0040195111002903?casa_token=wTzEUe0IdicAAAAA:fYbKmGkHHrQfyLicd0lO4Ai451jT6h_yTF6ZZXrvglpw9rXDTVVzWzIWNQ0aFAFbMJ_pU6I">Karabulut et al. (2011)</a> in a csv file that we read with <code class="docutils literal notranslate"><span class="pre">pandas</span></code>. The model is given in meters for the depth and in m/s for the speed values. Everything is converted to km for compatibility with <code class="docutils literal notranslate"><span class="pre">pykonal</span></code>.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[3]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">FILEPATH_VELOCITY</span> <span class="o">=</span> <span class="s2">&quot;../data/velocity_model_Karabulut2011.csv&quot;</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[4]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Read velocity model</span>
+<span class="n">velocity_layers</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span>
+    <span class="n">FILEPATH_VELOCITY</span><span class="p">,</span>
+    <span class="n">usecols</span><span class="o">=</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">4</span><span class="p">],</span>
+    <span class="n">names</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;depth&quot;</span><span class="p">,</span> <span class="s2">&quot;P&quot;</span><span class="p">,</span> <span class="s2">&quot;S&quot;</span><span class="p">],</span>
+    <span class="n">skiprows</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+    <span class="n">index_col</span><span class="o">=</span><span class="s2">&quot;depth&quot;</span><span class="p">,</span>
+    <span class="p">)</span>
+
+<span class="c1"># Convert meters to kilometers</span>
+<span class="n">velocity_layers</span> <span class="o">*=</span> <span class="mf">1e-3</span>
+<span class="n">velocity_layers</span><span class="o">.</span><span class="n">index</span> <span class="o">*=</span> <span class="mf">1e-3</span>
+
+<span class="c1"># Show table</span>
+<span class="n">velocity_layers</span><span class="o">.</span><span class="n">T</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[4]:
+</pre></div>
+</div>
+<div class="output_area rendered_html docutils container">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th>depth</th>
+      <th>-2.0</th>
+      <th>0.0</th>
+      <th>1.0</th>
+      <th>2.0</th>
+      <th>3.0</th>
+      <th>4.0</th>
+      <th>5.0</th>
+      <th>6.0</th>
+      <th>8.0</th>
+      <th>10.0</th>
+      <th>12.0</th>
+      <th>14.0</th>
+      <th>15.0</th>
+      <th>20.0</th>
+      <th>22.0</th>
+      <th>25.0</th>
+      <th>32.0</th>
+      <th>77.0</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>P</th>
+      <td>2.90</td>
+      <td>3.0</td>
+      <td>5.60</td>
+      <td>5.70</td>
+      <td>5.80</td>
+      <td>5.90</td>
+      <td>5.95</td>
+      <td>6.05</td>
+      <td>6.10</td>
+      <td>6.15</td>
+      <td>6.20</td>
+      <td>6.25</td>
+      <td>6.30</td>
+      <td>6.40</td>
+      <td>6.50</td>
+      <td>6.70</td>
+      <td>8.00</td>
+      <td>8.045</td>
+    </tr>
+    <tr>
+      <th>S</th>
+      <td>1.67</td>
+      <td>1.9</td>
+      <td>3.15</td>
+      <td>3.21</td>
+      <td>3.26</td>
+      <td>3.41</td>
+      <td>3.42</td>
+      <td>3.44</td>
+      <td>3.48</td>
+      <td>3.56</td>
+      <td>3.59</td>
+      <td>3.61</td>
+      <td>3.63</td>
+      <td>3.66</td>
+      <td>3.78</td>
+      <td>3.85</td>
+      <td>4.65</td>
+      <td>4.650</td>
+    </tr>
+  </tbody>
+</table>
+</div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[5]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">ax</span> <span class="o">=</span> <span class="n">velocity_layers</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span>
+    <span class="n">drawstyle</span><span class="o">=</span><span class="s2">&quot;steps-post&quot;</span><span class="p">,</span>
+    <span class="n">ylabel</span><span class="o">=</span><span class="s2">&quot;Wave Velocity (km/s)&quot;</span><span class="p">,</span>
+    <span class="n">xlabel</span><span class="o">=</span><span class="s2">&quot;Depth (km)&quot;</span><span class="p">,</span>
+    <span class="n">title</span><span class="o">=</span><span class="s2">&quot;1D velocity model from Karabulut et al. 2011&quot;</span><span class="p">,</span>
+    <span class="n">grid</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../../_images/tutorial_notebooks_2_travel_times_5_0.png" src="../../_images/tutorial_notebooks_2_travel_times_5_0.png" />
+</div>
+</div>
+</section>
+<section id="Interpolate-velocity-model-at-depth">
+<h2>Interpolate velocity model at depth<a class="headerlink" href="#Interpolate-velocity-model-at-depth" title="Link to this heading"></a></h2>
+<p>We compute the travel times on a finer grid than the model grid, so we need to interpolate the model. We define 30 depths between 30 km and -2 km.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[6]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">depths</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mf">30.0</span><span class="p">,</span> <span class="o">-</span><span class="mf">2.0</span><span class="p">,</span> <span class="mi">32</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<p>Then we interpolate the velocity at the given depths using <code class="docutils literal notranslate"><span class="pre">pandas.DataFrame</span></code> method <code class="docutils literal notranslate"><span class="pre">reindex</span></code>.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[7]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">velocity_layers_interp</span> <span class="o">=</span> <span class="n">velocity_layers</span><span class="o">.</span><span class="n">reindex</span><span class="p">(</span><span class="n">depths</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s2">&quot;ffill&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<p>We can then compare the natural (layered) and interpolated models as a function of depth</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[8]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">velocity_layers</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">drawstyle</span><span class="o">=</span><span class="s2">&quot;steps-post&quot;</span><span class="p">)</span>
+<span class="n">velocity_layers_interp</span><span class="o">.</span><span class="n">sort_values</span><span class="p">(</span><span class="s2">&quot;depth&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span>
+    <span class="n">drawstyle</span><span class="o">=</span><span class="s2">&quot;steps-post&quot;</span><span class="p">,</span>
+    <span class="n">xlabel</span><span class="o">=</span><span class="s2">&quot;Depth (km)&quot;</span><span class="p">,</span>
+    <span class="n">ylabel</span><span class="o">=</span><span class="s2">&quot;Speed (km/s)&quot;</span><span class="p">,</span>
+    <span class="n">title</span><span class="o">=</span><span class="s2">&quot;1D velocity model from Karabulut et al. 2011&quot;</span><span class="p">,</span>
+    <span class="n">ax</span><span class="o">=</span><span class="n">plt</span><span class="o">.</span><span class="n">gca</span><span class="p">(),</span>
+    <span class="n">grid</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">12</span><span class="p">,</span> <span class="mi">8</span><span class="p">),</span>
+    <span class="n">marker</span><span class="o">=</span><span class="s2">&quot;s&quot;</span><span class="p">,</span>
+    <span class="n">ls</span><span class="o">=</span><span class="s2">&quot;&quot;</span>
+<span class="p">)</span>
+
+<span class="c1"># Labels and legends</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">axvspan</span><span class="p">(</span><span class="n">depths</span><span class="o">.</span><span class="n">min</span><span class="p">(),</span> <span class="n">depths</span><span class="o">.</span><span class="n">max</span><span class="p">(),</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.2</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">legend</span><span class="p">([</span><span class="s2">&quot;P&quot;</span><span class="p">,</span> <span class="s2">&quot;S&quot;</span><span class="p">,</span> <span class="s2">&quot;P interpolated&quot;</span><span class="p">,</span> <span class="s2">&quot;S interpolated&quot;</span><span class="p">,</span> <span class="s2">&quot;Domain&quot;</span><span class="p">])</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../../_images/tutorial_notebooks_2_travel_times_11_0.png" src="../../_images/tutorial_notebooks_2_travel_times_11_0.png" />
+</div>
+</div>
+</section>
+<section id="Expand-model-laterally">
+<h2>Expand model laterally<a class="headerlink" href="#Expand-model-laterally" title="Link to this heading"></a></h2>
+<p>Because <code class="docutils literal notranslate"><span class="pre">pykonal</span></code> uses three-dimensional coordinate systems, we need to cast the one-dimensional velocity model onto a three-dimensional grid. The following define the grid in the longitude and latitude dimensions.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[9]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">velocity_layers_interp</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[9]:
+</pre></div>
+</div>
+<div class="output_area rendered_html docutils container">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>P</th>
+      <th>S</th>
+    </tr>
+    <tr>
+      <th>depth</th>
+      <th></th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>30.000000</th>
+      <td>6.70</td>
+      <td>3.85</td>
+    </tr>
+    <tr>
+      <th>28.967742</th>
+      <td>6.70</td>
+      <td>3.85</td>
+    </tr>
+    <tr>
+      <th>27.935484</th>
+      <td>6.70</td>
+      <td>3.85</td>
+    </tr>
+    <tr>
+      <th>26.903226</th>
+      <td>6.70</td>
+      <td>3.85</td>
+    </tr>
+    <tr>
+      <th>25.870968</th>
+      <td>6.70</td>
+      <td>3.85</td>
+    </tr>
+    <tr>
+      <th>24.838710</th>
+      <td>6.50</td>
+      <td>3.78</td>
+    </tr>
+    <tr>
+      <th>23.806452</th>
+      <td>6.50</td>
+      <td>3.78</td>
+    </tr>
+    <tr>
+      <th>22.774194</th>
+      <td>6.50</td>
+      <td>3.78</td>
+    </tr>
+    <tr>
+      <th>21.741935</th>
+      <td>6.40</td>
+      <td>3.66</td>
+    </tr>
+    <tr>
+      <th>20.709677</th>
+      <td>6.40</td>
+      <td>3.66</td>
+    </tr>
+    <tr>
+      <th>19.677419</th>
+      <td>6.30</td>
+      <td>3.63</td>
+    </tr>
+    <tr>
+      <th>18.645161</th>
+      <td>6.30</td>
+      <td>3.63</td>
+    </tr>
+    <tr>
+      <th>17.612903</th>
+      <td>6.30</td>
+      <td>3.63</td>
+    </tr>
+    <tr>
+      <th>16.580645</th>
+      <td>6.30</td>
+      <td>3.63</td>
+    </tr>
+    <tr>
+      <th>15.548387</th>
+      <td>6.30</td>
+      <td>3.63</td>
+    </tr>
+    <tr>
+      <th>14.516129</th>
+      <td>6.25</td>
+      <td>3.61</td>
+    </tr>
+    <tr>
+      <th>13.483871</th>
+      <td>6.20</td>
+      <td>3.59</td>
+    </tr>
+    <tr>
+      <th>12.451613</th>
+      <td>6.20</td>
+      <td>3.59</td>
+    </tr>
+    <tr>
+      <th>11.419355</th>
+      <td>6.15</td>
+      <td>3.56</td>
+    </tr>
+    <tr>
+      <th>10.387097</th>
+      <td>6.15</td>
+      <td>3.56</td>
+    </tr>
+    <tr>
+      <th>9.354839</th>
+      <td>6.10</td>
+      <td>3.48</td>
+    </tr>
+    <tr>
+      <th>8.322581</th>
+      <td>6.10</td>
+      <td>3.48</td>
+    </tr>
+    <tr>
+      <th>7.290323</th>
+      <td>6.05</td>
+      <td>3.44</td>
+    </tr>
+    <tr>
+      <th>6.258065</th>
+      <td>6.05</td>
+      <td>3.44</td>
+    </tr>
+    <tr>
+      <th>5.225806</th>
+      <td>5.95</td>
+      <td>3.42</td>
+    </tr>
+    <tr>
+      <th>4.193548</th>
+      <td>5.90</td>
+      <td>3.41</td>
+    </tr>
+    <tr>
+      <th>3.161290</th>
+      <td>5.80</td>
+      <td>3.26</td>
+    </tr>
+    <tr>
+      <th>2.129032</th>
+      <td>5.70</td>
+      <td>3.21</td>
+    </tr>
+    <tr>
+      <th>1.096774</th>
+      <td>5.60</td>
+      <td>3.15</td>
+    </tr>
+    <tr>
+      <th>0.064516</th>
+      <td>3.00</td>
+      <td>1.90</td>
+    </tr>
+    <tr>
+      <th>-0.967742</th>
+      <td>2.90</td>
+      <td>1.67</td>
+    </tr>
+    <tr>
+      <th>-2.000000</th>
+      <td>2.90</td>
+      <td>1.67</td>
+    </tr>
+  </tbody>
+</table>
+</div></div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[10]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">longitudes</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mf">30.20</span><span class="p">,</span> <span class="mf">30.45</span><span class="p">,</span> <span class="mi">25</span><span class="p">)</span>
+<span class="c1"># sample latitudes in decreasing order to get corresponding colatitudes in increasing order (see explanation further)</span>
+<span class="n">latitudes</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mf">40.76</span><span class="p">,</span> <span class="mf">40.60</span><span class="p">,</span> <span class="mi">16</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<p>We then expand the velocity vector in the longitude and latitude dimensions with <code class="docutils literal notranslate"><span class="pre">xarray</span></code>. This operation is automatically done with the <code class="docutils literal notranslate"><span class="pre">expand_dim()</span></code> method.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[11]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">velocity_P</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="nb">len</span><span class="p">(</span><span class="n">depths</span><span class="p">),</span> <span class="nb">len</span><span class="p">(</span><span class="n">latitudes</span><span class="p">),</span> <span class="nb">len</span><span class="p">(</span><span class="n">longitudes</span><span class="p">)),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+<span class="n">velocity_S</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="nb">len</span><span class="p">(</span><span class="n">depths</span><span class="p">),</span> <span class="nb">len</span><span class="p">(</span><span class="n">latitudes</span><span class="p">),</span> <span class="nb">len</span><span class="p">(</span><span class="n">longitudes</span><span class="p">)),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+<span class="c1"># use numpy&#39;s broadcasting rules</span>
+<span class="n">velocity_P</span><span class="p">[</span><span class="o">...</span><span class="p">]</span> <span class="o">=</span> <span class="n">velocity_layers_interp</span><span class="p">[</span><span class="s2">&quot;P&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">[:,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span>
+<span class="n">velocity_S</span><span class="p">[</span><span class="o">...</span><span class="p">]</span> <span class="o">=</span> <span class="n">velocity_layers_interp</span><span class="p">[</span><span class="s2">&quot;S&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">[:,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span>
+<span class="c1"># store the P- and S-wave velocity models in a dictionary</span>
+<span class="n">velocity_model</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">&quot;P&quot;</span><span class="p">:</span> <span class="n">velocity_P</span><span class="p">,</span>
+    <span class="s2">&quot;S&quot;</span><span class="p">:</span> <span class="n">velocity_S</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</div>
+</section>
+<section id="Station-coordinates">
+<h2>Station coordinates<a class="headerlink" href="#Station-coordinates" title="Link to this heading"></a></h2>
+<p>We extract the station coordinates from the XML files.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[12]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Get inventories</span>
+<span class="n">inventory</span> <span class="o">=</span> <span class="n">read_inventory</span><span class="p">(</span><span class="s2">&quot;../data/processed/*xml&quot;</span><span class="p">)</span>
+
+<span class="c1"># Extract stations</span>
+<span class="n">stations</span> <span class="o">=</span> <span class="p">[</span><span class="n">sta</span> <span class="k">for</span> <span class="n">net</span> <span class="ow">in</span> <span class="n">inventory</span> <span class="k">for</span> <span class="n">sta</span> <span class="ow">in</span> <span class="n">net</span><span class="p">]</span>
+<span class="n">attrs</span> <span class="o">=</span> <span class="s2">&quot;longitude&quot;</span><span class="p">,</span> <span class="s2">&quot;latitude&quot;</span><span class="p">,</span> <span class="s2">&quot;elevation&quot;</span><span class="p">,</span> <span class="s2">&quot;code&quot;</span>
+<span class="n">stations</span> <span class="o">=</span> <span class="p">[{</span><span class="n">item</span><span class="p">:</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">sta</span><span class="p">,</span> <span class="n">item</span><span class="p">)</span> <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">attrs</span><span class="p">}</span> <span class="k">for</span> <span class="n">sta</span> <span class="ow">in</span> <span class="n">stations</span><span class="p">]</span>
+
+<span class="c1"># Turn into dataframe</span>
+<span class="n">network</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">stations</span><span class="p">)</span><span class="o">.</span><span class="n">set_index</span><span class="p">(</span><span class="s2">&quot;code&quot;</span><span class="p">)</span>
+<span class="n">network</span><span class="p">[</span><span class="s2">&quot;depth&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="o">-</span><span class="mf">1e-3</span> <span class="o">*</span> <span class="n">network</span><span class="o">.</span><span class="n">elevation</span>
+
+<span class="c1"># Save network metadata</span>
+<span class="n">network</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span><span class="s2">&quot;../data/network.csv&quot;</span><span class="p">)</span>
+
+<span class="c1"># Show</span>
+<span class="n">network</span>
+<br/></pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[12]:
+</pre></div>
+</div>
+<div class="output_area rendered_html docutils container">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>longitude</th>
+      <th>latitude</th>
+      <th>elevation</th>
+      <th>depth</th>
+    </tr>
+    <tr>
+      <th>code</th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>DC06</th>
+      <td>30.265751</td>
+      <td>40.616718</td>
+      <td>555.0</td>
+      <td>-0.555</td>
+    </tr>
+    <tr>
+      <th>DC07</th>
+      <td>30.242170</td>
+      <td>40.667080</td>
+      <td>164.0</td>
+      <td>-0.164</td>
+    </tr>
+    <tr>
+      <th>DC08</th>
+      <td>30.250130</td>
+      <td>40.744438</td>
+      <td>162.0</td>
+      <td>-0.162</td>
+    </tr>
+    <tr>
+      <th>DD06</th>
+      <td>30.317770</td>
+      <td>40.623539</td>
+      <td>182.0</td>
+      <td>-0.182</td>
+    </tr>
+    <tr>
+      <th>DE07</th>
+      <td>30.411539</td>
+      <td>40.679661</td>
+      <td>40.0</td>
+      <td>-0.040</td>
+    </tr>
+    <tr>
+      <th>DE08</th>
+      <td>30.406469</td>
+      <td>40.748562</td>
+      <td>31.0</td>
+      <td>-0.031</td>
+    </tr>
+    <tr>
+      <th>SAUV</th>
+      <td>30.327200</td>
+      <td>40.740200</td>
+      <td>170.0</td>
+      <td>-0.170</td>
+    </tr>
+    <tr>
+      <th>SPNC</th>
+      <td>30.308300</td>
+      <td>40.686001</td>
+      <td>190.0</td>
+      <td>-0.190</td>
+    </tr>
+  </tbody>
+</table>
+</div></div>
+</div>
+</section>
+<section id="Show-model-and-stations">
+<h2>Show model and stations<a class="headerlink" href="#Show-model-and-stations" title="Link to this heading"></a></h2>
+<p>This cell selects a slice of the velocity model with the <code class="docutils literal notranslate"><span class="pre">DataArray.sel()</span></code> and plots it.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[14]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Select slice at first latitude index</span>
+<span class="n">phase</span> <span class="o">=</span> <span class="s2">&quot;S&quot;</span>
+<span class="n">velocities_slice</span> <span class="o">=</span> <span class="n">velocity_model</span><span class="p">[</span><span class="n">phase</span><span class="p">][:,</span> <span class="mi">0</span><span class="p">,</span> <span class="p">:]</span>
+
+<span class="c1"># Show velocities</span>
+<span class="n">fig</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">12</span><span class="p">,</span> <span class="mi">8</span><span class="p">))</span>
+<span class="n">img</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">pcolormesh</span><span class="p">(</span><span class="n">longitudes</span><span class="p">,</span> <span class="n">depths</span><span class="p">,</span> <span class="n">velocities_slice</span><span class="p">,</span> <span class="n">cmap</span><span class="o">=</span><span class="s2">&quot;RdBu&quot;</span><span class="p">)</span>
+<span class="n">cb</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">colorbar</span><span class="p">(</span><span class="n">img</span><span class="p">)</span>
+
+<span class="c1"># Show stations</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">network</span><span class="o">.</span><span class="n">longitude</span><span class="p">,</span> <span class="n">network</span><span class="o">.</span><span class="n">depth</span><span class="p">,</span> <span class="s2">&quot;wv&quot;</span><span class="p">)</span>
+
+<span class="c1"># Labels</span>
+<span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">gca</span><span class="p">()</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s2">&quot;Longitude (degrees)&quot;</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s2">&quot;Depth (km)&quot;</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s2">&quot;Velocity model slice from 3D grid&quot;</span><span class="p">)</span>
+<span class="n">cb</span><span class="o">.</span><span class="n">set_label</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">phase</span><span class="si">}</span><span class="s2"> velocity (km/s)&quot;</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">invert_yaxis</span><span class="p">()</span>
+<br/></pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../../_images/tutorial_notebooks_2_travel_times_20_0.png" src="../../_images/tutorial_notebooks_2_travel_times_20_0.png" />
+</div>
+</div>
+</section>
+<section id="Compute-travel-times">
+<h2>Compute travel times<a class="headerlink" href="#Compute-travel-times" title="Link to this heading"></a></h2>
+<p>The travel times are computed for every station with the Eikonal solver of <code class="docutils literal notranslate"><span class="pre">pykonal</span></code>. The travel times are then saved into a <code class="docutils literal notranslate"><span class="pre">h5</span></code> file for later use.</p>
+<p><strong>Warning</strong>: For <code class="docutils literal notranslate"><span class="pre">pykonal</span></code>, we need to give the velocity grid in spherical coordinates <span class="math notranslate nohighlight">\((r, \theta, \varphi)\)</span>, which is why we built the grid with decreasing depths and latitudes.</p>
+<p>Spherical coordinates: - <span class="math notranslate nohighlight">\(r\)</span>: Distance from center or Earth in km (= decreasing depth). - <span class="math notranslate nohighlight">\(\theta\)</span>: Polar angle in radians (= co-latitude or, equivalently, decreasing latitude). - <span class="math notranslate nohighlight">\(\varphi\)</span>: Azimuthal angle in radians (= longitude).</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[15]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">STATION_ENTRIES</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;latitude&quot;</span><span class="p">,</span> <span class="s2">&quot;longitude&quot;</span><span class="p">,</span> <span class="s2">&quot;depth&quot;</span><span class="p">]</span>
+
+<span class="c1"># Initialize travel times</span>
+<span class="n">travel_times</span> <span class="o">=</span> <span class="p">{}</span>
+
+<span class="c1"># Reference point</span>
+<span class="n">reference_point</span> <span class="o">=</span> <span class="n">geo2sph</span><span class="p">((</span><span class="n">latitudes</span><span class="o">.</span><span class="n">max</span><span class="p">(),</span> <span class="n">longitudes</span><span class="o">.</span><span class="n">min</span><span class="p">(),</span> <span class="n">depths</span><span class="o">.</span><span class="n">max</span><span class="p">()))</span>
+<span class="n">node_intervals</span> <span class="o">=</span> <span class="p">(</span>
+    <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">depths</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">depths</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span>
+    <span class="n">np</span><span class="o">.</span><span class="n">deg2rad</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">latitudes</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">latitudes</span><span class="p">[</span><span class="mi">0</span><span class="p">])),</span>
+    <span class="n">np</span><span class="o">.</span><span class="n">deg2rad</span><span class="p">(</span><span class="n">longitudes</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">longitudes</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span>
+<span class="p">)</span>
+
+<span class="c1"># Loop over stations and phases</span>
+<span class="k">for</span> <span class="n">phase</span> <span class="ow">in</span> <span class="n">velocity_model</span><span class="p">:</span>
+    <span class="n">travel_times</span><span class="p">[</span><span class="n">phase</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="k">for</span> <span class="n">station</span> <span class="ow">in</span> <span class="n">tqdm</span><span class="o">.</span><span class="n">tqdm</span><span class="p">(</span><span class="n">network</span><span class="o">.</span><span class="n">index</span><span class="p">,</span> <span class="n">desc</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;Travel times </span><span class="si">{</span><span class="n">phase</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">):</span>
+
+        <span class="c1"># Initialize Eikonal solver</span>
+        <span class="n">solver</span> <span class="o">=</span> <span class="n">PointSourceSolver</span><span class="p">(</span><span class="n">coord_sys</span><span class="o">=</span><span class="s2">&quot;spherical&quot;</span><span class="p">)</span>
+        <span class="n">solver</span><span class="o">.</span><span class="n">velocity</span><span class="o">.</span><span class="n">min_coords</span> <span class="o">=</span> <span class="n">reference_point</span>
+        <span class="n">solver</span><span class="o">.</span><span class="n">velocity</span><span class="o">.</span><span class="n">node_intervals</span> <span class="o">=</span> <span class="n">node_intervals</span>
+        <span class="n">velocity</span> <span class="o">=</span> <span class="n">velocity_model</span><span class="p">[</span><span class="n">phase</span><span class="p">]</span>
+        <span class="n">solver</span><span class="o">.</span><span class="n">velocity</span><span class="o">.</span><span class="n">npts</span> <span class="o">=</span> <span class="n">velocity</span><span class="o">.</span><span class="n">shape</span>
+        <span class="n">solver</span><span class="o">.</span><span class="n">velocity</span><span class="o">.</span><span class="n">values</span> <span class="o">=</span> <span class="n">velocity</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+
+        <span class="c1"># Source</span>
+        <span class="n">src_loc</span> <span class="o">=</span> <span class="n">network</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">station</span><span class="p">][</span><span class="n">STATION_ENTRIES</span><span class="p">]</span><span class="o">.</span><span class="n">values</span>
+        <span class="n">solver</span><span class="o">.</span><span class="n">src_loc</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">geo2sph</span><span class="p">(</span><span class="n">src_loc</span><span class="p">)</span><span class="o">.</span><span class="n">squeeze</span><span class="p">())</span>
+
+        <span class="c1"># Solve Eikonal equation</span>
+        <span class="n">solver</span><span class="o">.</span><span class="n">solve</span><span class="p">()</span>
+
+        <span class="c1"># Update the travel_times dictionary</span>
+        <span class="n">tt</span> <span class="o">=</span> <span class="n">solver</span><span class="o">.</span><span class="n">tt</span><span class="o">.</span><span class="n">values</span>
+        <span class="c1"># pykonal might produce a singularity at origin</span>
+        <span class="n">tt</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">isinf</span><span class="p">(</span><span class="n">tt</span><span class="p">)]</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="n">travel_times</span><span class="p">[</span><span class="n">phase</span><span class="p">][</span><span class="n">station</span><span class="p">]</span> <span class="o">=</span> <span class="n">tt</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+Travel times P:   0%|          | 0/8 [00:00&lt;?, ?it/s]
+</pre></div></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+Travel times P: 100%|██████████| 8/8 [00:03&lt;00:00,  2.01it/s]
+Travel times S: 100%|██████████| 8/8 [00:03&lt;00:00,  2.08it/s]
+</pre></div></div>
+</div>
+</section>
+<section id="Save-travel-times-and-grid-coordinates">
+<h2>Save travel times and grid coordinates<a class="headerlink" href="#Save-travel-times-and-grid-coordinates" title="Link to this heading"></a></h2>
+<p>Save the travel times as a hdf5 file. This format preserves a self-explanatory data structure and supports compression.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[16]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># build 3D gridded coordinates from depths, latitudes and longitudes vectors</span>
+<span class="c1"># these are the coordinates of the points in the travel time grid</span>
+<span class="n">depths_g</span><span class="p">,</span> <span class="n">latitudes_g</span><span class="p">,</span> <span class="n">longitudes_g</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">meshgrid</span><span class="p">(</span>
+    <span class="n">depths</span><span class="p">,</span> <span class="n">latitudes</span><span class="p">,</span> <span class="n">longitudes</span><span class="p">,</span> <span class="n">indexing</span><span class="o">=</span><span class="s2">&quot;ij&quot;</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[17]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">with</span> <span class="n">h5</span><span class="o">.</span><span class="n">File</span><span class="p">(</span><span class="s2">&quot;../data/travel_times.h5&quot;</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;w&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">ftt</span><span class="p">:</span>
+    <span class="n">ftt</span><span class="o">.</span><span class="n">create_group</span><span class="p">(</span><span class="s2">&quot;source_coordinates&quot;</span><span class="p">)</span>
+    <span class="n">ftt</span><span class="p">[</span><span class="s2">&quot;source_coordinates&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">create_dataset</span><span class="p">(</span><span class="s2">&quot;depth&quot;</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">depths_g</span><span class="p">)</span>
+    <span class="n">ftt</span><span class="p">[</span><span class="s2">&quot;source_coordinates&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">create_dataset</span><span class="p">(</span><span class="s2">&quot;latitude&quot;</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">latitudes_g</span><span class="p">)</span>
+    <span class="n">ftt</span><span class="p">[</span><span class="s2">&quot;source_coordinates&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">create_dataset</span><span class="p">(</span><span class="s2">&quot;longitude&quot;</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">longitudes_g</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">phase</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;P&quot;</span><span class="p">,</span> <span class="s2">&quot;S&quot;</span><span class="p">]:</span>
+        <span class="n">ftt</span><span class="o">.</span><span class="n">create_group</span><span class="p">(</span><span class="n">phase</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">sta</span> <span class="ow">in</span> <span class="n">travel_times</span><span class="p">[</span><span class="n">phase</span><span class="p">]:</span>
+            <span class="n">ftt</span><span class="p">[</span><span class="n">phase</span><span class="p">]</span><span class="o">.</span><span class="n">create_dataset</span><span class="p">(</span><span class="n">sta</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">travel_times</span><span class="p">[</span><span class="n">phase</span><span class="p">][</span><span class="n">sta</span><span class="p">])</span>
+</pre></div>
+</div>
+</div>
+</section>
+<section id="Show-travel-times-at-a-given-station">
+<h2>Show travel times at a given station<a class="headerlink" href="#Show-travel-times-at-a-given-station" title="Link to this heading"></a></h2>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[18]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">CONTOUR_LEVELS</span> <span class="o">=</span> <span class="mi">20</span>
+<span class="n">SEISMIC_PHASE</span> <span class="o">=</span> <span class="s2">&quot;S&quot;</span>
+<span class="n">station</span> <span class="o">=</span> <span class="n">network</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="s2">&quot;DC06&quot;</span><span class="p">]</span>
+
+<span class="c1"># Show</span>
+<span class="n">latitude_id</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">latitudes</span> <span class="o">-</span> <span class="n">station</span><span class="o">.</span><span class="n">latitude</span><span class="p">)</span><span class="o">.</span><span class="n">argmin</span><span class="p">()</span>
+<span class="n">time_delays</span> <span class="o">=</span> <span class="n">travel_times</span><span class="p">[</span><span class="n">SEISMIC_PHASE</span><span class="p">][</span><span class="n">station</span><span class="o">.</span><span class="n">name</span><span class="p">]</span>
+<span class="n">time_delays</span> <span class="o">=</span> <span class="n">time_delays</span><span class="p">[:,</span> <span class="n">latitude_id</span><span class="p">,</span> <span class="p">:]</span>
+<span class="n">fig</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">12</span><span class="p">,</span> <span class="mi">8</span><span class="p">))</span>
+<span class="n">img</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">contourf</span><span class="p">(</span><span class="n">longitudes</span><span class="p">,</span> <span class="n">depths</span><span class="p">,</span> <span class="n">time_delays</span><span class="p">,</span> <span class="n">cmap</span><span class="o">=</span><span class="s2">&quot;RdPu&quot;</span><span class="p">,</span> <span class="n">levels</span><span class="o">=</span><span class="n">CONTOUR_LEVELS</span><span class="p">)</span>
+
+<span class="c1"># Colorbar</span>
+<span class="n">cb</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">colorbar</span><span class="p">(</span><span class="n">img</span><span class="p">)</span>
+<span class="n">cb</span><span class="o">.</span><span class="n">set_label</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Travel times </span><span class="si">{</span><span class="n">SEISMIC_PHASE</span><span class="si">}</span><span class="s2"> (seconds)&quot;</span><span class="p">)</span>
+
+<span class="c1"># Station</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">station</span><span class="o">.</span><span class="n">longitude</span><span class="p">,</span> <span class="n">station</span><span class="o">.</span><span class="n">depth</span><span class="p">,</span> <span class="s2">&quot;k.&quot;</span><span class="p">)</span>
+
+<span class="c1"># Labels</span>
+<span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">gca</span><span class="p">()</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">invert_yaxis</span><span class="p">()</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s2">&quot;Longitude (degrees)&quot;</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s2">&quot;Depth (km)&quot;</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Travel times from the seismic station </span><span class="si">{</span><span class="n">station</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+<br/></pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../../_images/tutorial_notebooks_2_travel_times_27_0.png" src="../../_images/tutorial_notebooks_2_travel_times_27_0.png" />
+</div>
+</div>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="1_preprocess.html" class="btn btn-neutral float-left" title="1. Preprocess seismic waveforms" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="3_beampower.html" class="btn btn-neutral float-right" title="3. Beamforming for location" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, Eric Beauce, William B. Frank and Leonard Seydoux.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
