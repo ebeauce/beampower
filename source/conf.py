@@ -22,7 +22,7 @@ copyright = "2022, Eric Beauce, William B. Frank and Leonard Seydoux"
 author = "Eric Beauce, William B. Frank and Leonard Seydoux"
 
 # The full version, including alpha/beta/rc tags
-release = "1.0.1"
+release = "1.0.2"
 
 
 # -- General configuration ---------------------------------------------------
@@ -66,6 +66,7 @@ html_theme = "sphinx_rtd_theme"
 html_static_path = ["_static"]
 
 html_logo = "files/logo.png"
+#html_logo = "files/beampower_light.png"
 
 # styling options
 #html_theme_options = {
