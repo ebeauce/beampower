@@ -61,7 +61,7 @@ def beamform(
         - 'strict': A beam is computed if and only if the moveouts point to a
           valid sample (that is, within the bounds of the data stream) for every
           channel used in the beam.
-        - 'flexbile': A beam is computed as long as the moveouts point to a
+        - 'flexible': A beam is computed as long as the moveouts point to a
           valid sample for at least one channel. This option is particularly
           useful for real time applications where an event might have been
           recorded at the closest stations but not yet at the more distant ones.
