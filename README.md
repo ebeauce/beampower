@@ -1,7 +1,7 @@
 # Welcome to the __beampower__ repository!
 
 <p align="center">
-<img src="data/logo.png" width=500>
+<img src="data/beampower_logo.png" width=500>
 </p><br><br><br><br>
 
 
