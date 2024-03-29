@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>API &mdash; beampower 1.0.1 documentation</title>
+  <title>API &mdash; beampower 1.0.2 documentation</title>
       <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
   <!--[if lt IE 9]>
@@ -12,7 +12,7 @@
   <![endif]-->
   
         <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
-        <script src="../_static/documentation_options.js?v=292eb321"></script>
+        <script src="../_static/documentation_options.js?v=1ed6394b"></script>
         <script src="../_static/doctools.js?v=888ff710"></script>
         <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
         <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -88,7 +88,7 @@
 <span id="api"></span><h1>API<a class="headerlink" href="#module-beampower.beampower" title="Link to this heading"></a></h1>
 <dl class="py function">
 <dt class="sig sig-object py" id="beampower.beampower.beamform">
-<span class="sig-prename descclassname"><span class="pre">beampower.beampower.</span></span><span class="sig-name descname"><span class="pre">beamform</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">waveform_features</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">time_delays</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">weights_phases</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">weights_sources</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">device</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'cpu'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">reduce</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'max'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mode</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'direct'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/beampower/beampower.html#beamform"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#beampower.beampower.beamform" title="Link to this definition"></a></dt>
+<span class="sig-prename descclassname"><span class="pre">beampower.beampower.</span></span><span class="sig-name descname"><span class="pre">beamform</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">waveform_features</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">time_delays</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">weights_phases</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">weights_sources</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">device</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'cpu'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">reduce</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'max'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mode</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'direct'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">out_of_bounds</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'strict'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_threads</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/beampower/beampower.html#beamform"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#beampower.beampower.beamform" title="Link to this definition"></a></dt>
 <dd><p>Compute the beamformed network response.</p>
 <p>This routine computes and returns the whole network response over the
 entire duration of <cite>waveform_features</cite>. Thus, if the input source grid
@@ -118,6 +118,19 @@ delays are the (relative) source-receiver propagation times. If
 ‘differential’, the time delays are the inter-station differential
 propagation times. The latter requires <cite>waveform_features</cite> to be based
 on inter-station cross-correlations.</p></li>
+<li><p><strong>out_of_bounds</strong> (<em>string</em><em>, </em><em>default to 'strict'</em>) – <p>Either ‘strict’ (default) or ‘flexible’.</p>
+<ul>
+<li><p>’strict’: A beam is computed if and only if the moveouts point to a
+valid sample (that is, within the bounds of the data stream) for every
+channel used in the beam.</p></li>
+<li><p>’flexible’: A beam is computed as long as the moveouts point to a
+valid sample for at least one channel. This option is particularly
+useful for real time applications where an event might have been
+recorded at the closest stations but not yet at the more distant ones.</p></li>
+</ul>
+</p></li>
+<li><p><strong>num_threads</strong> (<em>int</em><em> or </em><em>None</em>) – Number of threads for CPU parallelization. If None, uses one thread per
+available (visible) CPU.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
@@ -134,7 +147,7 @@ indexes.</p></li>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="beampower.beampower.prestack_traces">
-<span class="sig-prename descclassname"><span class="pre">beampower.beampower.</span></span><span class="sig-name descname"><span class="pre">prestack_traces</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">waveform_features</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">weights_phases</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">device</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'cpu'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/beampower/beampower.html#prestack_traces"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#beampower.beampower.prestack_traces" title="Link to this definition"></a></dt>
+<span class="sig-prename descclassname"><span class="pre">beampower.beampower.</span></span><span class="sig-name descname"><span class="pre">prestack_traces</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">waveform_features</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">weights_phases</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_threads</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">device</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'cpu'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/beampower/beampower.html#prestack_traces"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#beampower.beampower.prestack_traces" title="Link to this definition"></a></dt>
 <dd><p>Prestack the detection traces ahead of the beamforming.</p>
 <p>Channel-wise stacking for each target seismic phase can be done
 once and for all at the beginning of the computation.</p>
@@ -147,6 +160,8 @@ example, horizontal components might be given a small or zero
 weight for the P-wave stacking.</p></li>
 <li><p><strong>device</strong> (<em>string</em><em>, </em><em>default to 'cpu'</em>) – Either ‘cpu’ or ‘gpu’, depending on the available hardware and
 user’s preferences.</p></li>
+<li><p><strong>num_threads</strong> (<em>int</em><em> or </em><em>None</em>) – Number of threads for CPU parallelization. If None, uses one thread per
+available (visible) CPU.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
