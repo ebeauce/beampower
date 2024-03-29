@@ -57,6 +57,7 @@ def beamform(
         on inter-station cross-correlations.
     out_of_bounds: string, default to 'strict'
         Either 'strict' (default) or 'flexible'.
+
         - 'strict': A beam is computed if and only if the moveouts point to a
           valid sample (that is, within the bounds of the data stream) for every
           channel used in the beam.
