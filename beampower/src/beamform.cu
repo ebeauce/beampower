@@ -176,23 +176,31 @@ void __global__ _beam_check_out_of_bounds(
 }
 
 
-void __global__ _beam_max(float *beam, size_t n_sources, float *beam_max,
-        int *source_index_beam_max){
+void __global__ _beam_max(
+        float *beam,
+        size_t n_sources,
+        int global_time_index,
+        size_t n_samples,
+        float *beam_max,
+        int *source_index_beam_max
+        ){
 
     float max_beam = FLT_MIN;
     int max_beam_index;
 
-    // loop over all sources and search for the maximum
-    for (int i=0; i<n_sources; i++){
-        if (beam[i*blockDim.x + threadIdx.x] > max_beam){
-            max_beam = beam[i*blockDim.x + threadIdx.x];
-            max_beam_index = i;
+    if (global_time_index + threadIdx.x < n_samples){ 
+        // loop over all sources and search for the maximum
+        for (int i=0; i<n_sources; i++){
+            if (beam[i*blockDim.x + threadIdx.x] > max_beam){
+                max_beam = beam[i*blockDim.x + threadIdx.x];
+                max_beam_index = i;
+            }
         }
+        
+        // update output arrays
+        beam_max[threadIdx.x] = max_beam;
+        source_index_beam_max[threadIdx.x] = max_beam_index;
     }
-    
-    // update output arrays
-    beam_max[threadIdx.x] = max_beam;
-    source_index_beam_max[threadIdx.x] = max_beam_index;
 
 }
 
@@ -233,7 +241,7 @@ void beamform_max(
 
     // start a parallel section to distribute tasks across GPUs
 #pragma omp parallel firstprivate(n_sources_per_GPU, nGPUs)\
-    shared(waveform_features, time_delays, weights, beam_max)
+    shared(waveform_features, time_delays, weights, beam_max, source_index_beam_max)
     {
         // associate thread to a single GPU and get
         // GPU characteristics such as memory capacity
@@ -286,6 +294,7 @@ void beamform_max(
         size_t sizeofweights = n_sources_per_GPU*n_stations*sizeof(float);
         size_t sizeofbeam = BLOCKSIZE*n_sources_per_GPU*sizeof(float);
         size_t sizeofbeam_max = n_samples*sizeof(float);
+        size_t sizeofsource_index_beam_max = n_samples*sizeof(int);
         size_t sizeoftotal = sizeofdata + sizeoftime_delays + sizeoftime_delays_minmax\
                              + sizeofweights + sizeofbeam + 2*sizeofbeam_max;
 
@@ -308,10 +317,10 @@ void beamform_max(
         cudaMalloc((void**)&weights_d, sizeofweights);
         cudaMalloc((void**)&beam_d, sizeofbeam);
         cudaMalloc((void**)&beam_max_d, sizeofbeam_max);
-        cudaMalloc((void**)&source_index_beam_max_d, sizeofbeam_max);
+        cudaMalloc((void**)&source_index_beam_max_d, sizeofsource_index_beam_max);
         // declare host pointers and allocate CPU memory
         beam_max_thread = (float *)malloc(sizeofbeam_max);
-        source_index_beam_max_thread = (int *)malloc(sizeofbeam_max);
+        source_index_beam_max_thread = (int *)malloc(sizeofsource_index_beam_max);
 
         // transfer data from host (CPU) to device (GPU)
         cudaMemcpy(
@@ -342,7 +351,7 @@ void beamform_max(
 
         // initialize beam_max and source_index_beam_max
         cudaMemset(beam_max_d, 0., sizeofbeam_max);
-        cudaMemset(source_index_beam_max_d, 0., sizeofbeam_max);
+        cudaMemset(source_index_beam_max_d, 0., sizeofsource_index_beam_max);
 
         // initialize GPU time index
         int time_GPU = 0;
@@ -391,6 +400,8 @@ void beamform_max(
             _beam_max<<<1, BLOCKSIZE>>>(
                     beam_d,
                     n_sources_per_GPU,
+                    time_GPU,
+                    n_samples,
                     beam_max_d + time_GPU,
                     source_index_beam_max_d + time_GPU
                     );
@@ -404,7 +415,7 @@ void beamform_max(
         cudaMemcpy(
                 source_index_beam_max_thread,
                 source_index_beam_max_d,
-                sizeofbeam_max,
+                sizeofsource_index_beam_max,
                 cudaMemcpyDeviceToHost
                 );
 
@@ -422,6 +433,13 @@ void beamform_max(
                 if (beam_max_thread[t] > beam_max[t]){
                     beam_max[t] = beam_max_thread[t];
                     source_index_beam_max[t] = src_idx_start+source_index_beam_max_thread[t];
+                    //printf(
+                    //        "GPU %d says index is %i (that is, %zu + %i).\n",
+                    //        id,
+                    //        source_index_beam_max[t],
+                    //        src_idx_start,
+                    //        source_index_beam_max_thread[t]
+                    //        );
                 }
             }
         }
