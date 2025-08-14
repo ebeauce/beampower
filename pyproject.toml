@@ -7,7 +7,7 @@ name = "beampower"
 dynamic = ["version"]
 description = "Package for beamforming/backprojection."
 readme = "README.md"
-license = { text = "GPL" }
+license = { text = "MIT" }
 requires-python = ">=3.8"
 authors = [
     { name = "Eric Beaucé", email = "ebeauce@ldeo.columbia.edu" },
