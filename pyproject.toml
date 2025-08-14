@@ -1,0 +1,46 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "beampower"
+dynamic = ["version"]
+description = "Package for beamforming/backprojection."
+readme = "README.md"
+license = { text = "GPL" }
+requires-python = ">=3.8"
+authors = [
+    { name = "Eric Beaucé", email = "ebeauce@ldeo.columbia.edu" },
+    { name = "William Frank" },
+    { name = "Léonard Seydoux" },
+]
+maintainers = [
+    { name = "Eric Beaucé", email = "ebeauce@ldeo.columbia.edu" },
+    { name = "William Frank" },
+    { name = "Léonard Seydoux" },
+]
+keywords = ["earthquake detection", "backprojection", "beamforming"]
+classifiers = [
+    "Intended Audience :: Science/Research",
+    "Topic :: Scientific/Engineering",
+    "Programming Language :: Python :: 3.6",
+    "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
+]
+dependencies = [
+    "numpy>=1.19.5",
+]
+
+[tool.setuptools.packages.find]
+include = ["beampower*"]
+
+[tool.setuptools.dynamic]
+version = { attr = "beampower.__version__" }
+
+[tool.setuptools]
+include-package-data = true
+zip-safe = false
+
+[project.urls]
+GitHub = "https://github.com/beampower"
+Documentation = "https://https://ebeauce.github.io/beampower"
+Issues = "https://github.com/beampower/issues"
