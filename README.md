@@ -28,7 +28,6 @@ Download the repository on your computer at any location with the following comm
 
 Then, from the root of the repository, run the following commands:
 
-    python setup.py build_ext
     pip install .
 
 ### Option 2: via `pip`
