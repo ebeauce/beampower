@@ -23,27 +23,13 @@ Installation
 
 You may need to edit the Makefile according to your OS (instructions in the Makefile's comments).
 
-From source
-^^^^^^^^^^^
-A simple make + whichever implementation does the trick. Possible make commands are:
+After cloning or downloading :py:data:`beampower`, go to the root directory and run:
 
 .. code-block:: console
 
-    $ make python_cpu
-    $ make python_gpu
     $ pip install .
 
-Using pip (recommended)
-^^^^^^^^^^^^^^^^^^^^^^^
-
-Installation as a Python module is possible via pip (which supports clean uninstalling):
-
-.. code-block:: console
-
-    $ python setup.py build_ext
-    $ pip install .
-
-or simply:
+or simply (but without the possibility to edit the Makefile):
 
 .. code-block:: console
 
@@ -52,7 +38,7 @@ or simply:
 
 Required software/hardware:
 ---------------------------
-* A C compiler that supports OpenMP (default Mac OS compiler clang does not support OpenMP; gcc can be easily downloaded via homebrew), 
+* A C compiler that supports OpenMP (clang with Mac computers is fine but must be used with specific flags, see Makefile), 
 * CPU version:  Python 3.x, 
 * GPU version: Python 3.x and a discrete Nvidia graphics card that supports CUDA C with CUDA toolkit installed. 
 
