@@ -65,5 +65,5 @@ $(libdir)/beamform_gpu.so: $(srcdir)/beamform.cu
 	$(NVCC) $(COPTIMFLAGS_GPU) $(CFLAGS_GPU) $(ARCHFLAG) $(LDFLAGS_GPU) $< -o $@
 
 clean:
-	rm $(libdir)/*.so
+	rm -f $(libdir)/*.so
 
