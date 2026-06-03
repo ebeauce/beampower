@@ -44,6 +44,12 @@ That's it! No compilation needed. GPU support is included if available.
 ```bash
 git clone https://github.com/ebeauce/beampower.git
 cd beampower
+
+# Build the libraries FIRST (required for local development)
+make clean
+make  # builds both CPU and GPU libraries
+
+# Then install
 pip install .
 ```
 
@@ -62,11 +68,7 @@ make python_GPU
 make clean
 make
 
-# Then test the wheel:
-./build_wheels.sh cpu
+# Then reinstall to pick up changes:
+pip install --force-reinstall .
 ```
-
-## Publishing a New Release
-
-See [RELEASE.md](RELEASE.md) for instructions on tagging and publishing.
 

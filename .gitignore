@@ -75,6 +75,10 @@ wheels/
 .installed.cfg
 *.egg
 
+# Build helper scripts and maintainer docs (local use only, not for distribution)
+build_wheels.sh
+RELEASE.md
+
 # PyInstaller
 *.manifest
 *.spec
