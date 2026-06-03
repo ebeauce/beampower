@@ -23,10 +23,12 @@
 *.lo
 
 # Shared objects (inc. Windows DLLs)
+# BUT: Do NOT ignore beampower/lib/*.so (pre-built binaries needed for distribution)
 *.dll
-*.so
-*.so.*
 *.dylib
+!beampower/lib/*.so
+!beampower/lib/*.pyd
+!beampower/lib/*.dylib
 
 # Executables
 *.exe
@@ -56,9 +58,6 @@ __pycache__/
 *.py[cod]
 *$py.class
 
-# C extensions
-*.so
-
 # Distribution / packaging
 .Python
 build/
@@ -76,14 +75,13 @@ wheels/
 .installed.cfg
 *.egg
 
+# Build helper scripts and maintainer docs (local use only, not for distribution)
+build_wheels.sh
+RELEASE.md
+
 # PyInstaller
-#  Usually these files are written by a python script from a template
-#  before PyInstaller builds the exe, so as to inject date/other infos into it.
 *.manifest
 *.spec
-build
-dist
-FastMatchFilterPy.egg-info
 
 # Installer logs
 pip-log.txt
@@ -98,6 +96,28 @@ htmlcov/
 nosetests.xml
 coverage.xml
 *.cover
+.hypothesis/
+.pytest_cache/
+
+# Environments
+.env
+.venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
 .hypothesis/
 
 # Translations

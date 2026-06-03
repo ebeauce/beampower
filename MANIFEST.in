@@ -1,12 +1,24 @@
-# Manifest file for Python distribution - only list files required for Python
+# Manifest file for Python distribution
+# Include source files for reference
 include beampower/src/beamform.c
 include beampower/src/beamform_cpu.h
 include beampower/src/beamform.cu
 include beampower/src/beamform_gpu.h
+
+# Include Python files
 include beampower/__init__.py
 include beampower/beampower.py
-include beampower/lib/*.so
+include beampower/core.py
+
+# Include pre-built shared libraries (critical for distribution)
+recursive-include beampower/lib *.so
+recursive-include beampower/lib *.pyd
+recursive-include beampower/lib *.dylib
+
+# Include documentation and build files
 include LICENSE
 include Makefile
 include README.md
 include setup.py
+include pyproject.toml
+include BUILDING_WHEELS.md

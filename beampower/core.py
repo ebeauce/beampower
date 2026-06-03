@@ -100,26 +100,39 @@ def load_library(device="cpu"):
     ----------
     device: str, optional
         Device-compilated library, either "cpu" or "gpu".
+        
+    Returns
+    -------
+    lib : ctypes.CDLL
+        Loaded shared library object
+        
+    Raises
+    ------
+    NameError
+        If device is not "cpu" or "gpu"
+    OSError
+        If the library file is not found
+    RuntimeError
+        If GPU library is requested but not available
     """
     # Get device name
     device_name = device.lower()
 
     # Check device name
-    if device.lower() not in LIBRARIES:
-        raise NameError(f"Device should be cpu or gpu, not {device.lower()}")
+    if device_name not in LIBRARIES:
+        raise NameError(f"Device should be cpu or gpu, not {device_name}")
 
-    # Check if shared object exsits
+    # Check if shared object exists
     library_info = LIBRARIES[device_name]
     filepath_library = library_info["filepath_library"]
+    
     if os.path.exists(filepath_library):
-
         # If library was previously loaded, return it
         if library_info["is_loaded"] is True:
             return library_info["lib"]
 
         # Otherwise load it
         else:
-
             # Load
             lib = ct.cdll.LoadLibrary(filepath_library)
 
@@ -141,6 +154,16 @@ def load_library(device="cpu"):
             return lib
 
     else:
-        raise OSError(
-            f"Library for {device_name.upper()} was not compiled. The shared object {filepath_library} does not exist. \nYou may want to check the output of the command: \n\n \t python setup.py build_ext"
-        )
+        if device_name == "gpu":
+            # GPU library is optional - provide helpful message
+            raise RuntimeError(
+                f"GPU library not available. The shared object {filepath_library} does not exist.\n"
+                f"GPU support is optional. You can still use device='cpu' for CPU-based beamforming.\n"
+                f"To build GPU support, ensure CUDA is installed and rebuild the package."
+            )
+        else:
+            # CPU library is required
+            raise OSError(
+                f"CPU library is required but not found at {filepath_library}.\n"
+                f"This package requires pre-built binaries. Please reinstall: pip install --upgrade beampower"
+            )

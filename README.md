@@ -18,38 +18,57 @@ can call the C (CPU) or CUDA-C (GPU) implementation. See the documentation at [h
 
 There is no publication (yet) for this repository, but if you use it, please acknowledge it in your manuscript's _Data and Resources_ or _Acknowledgements_ section.
 
-## Installation 
+## Installation
 
-### Option 1: manual build
+The simplest way to use BeamPower:
 
-Download the repository on your computer at any location with the following command or with another GitHub repository manager
+```bash
+pip install beampower
+```
 
-    git clone https://github.com/ebeauce/beampower.git
+That's it! No compilation needed. GPU support is included if available.
 
-Then, from the root of the repository, run the following commands:
+## Learn More
 
-    pip install .
+- **Documentation**: https://ebeauce.github.io/beampower/
+- **Tutorials**: See the notebooks in the `notebooks/` folder
+  - Download seismic data
+  - Pre-process waveforms
+  - Calculate travel times
+  - Locate events
 
-### Option 2: via `pip`
+## For Developers
 
-From anywhere, run:
+**Clone and install locally:**
 
-    pip install git+https://github.com/ebeauce/beampower
+```bash
+git clone https://github.com/ebeauce/beampower.git
+cd beampower
 
+# Build the libraries FIRST (required for local development)
+make clean
+make  # builds both CPU and GPU libraries
 
-## Documentation and tutorials
+# Then install
+pip install .
+```
 
-See the [documentation](https://ebeauce.github.io/beampower/) on how to use `beampower` to detect and locate earthquakes. The package also comes with several tutorial notebooks (included also in the doc): 
+**If you modify C or CUDA code:**
 
-- [Download data](notebooks/0_download.ipynb)
-- [Pre-process data](notebooks/1_preprocess.ipynb)
-- [Calculate travel times](notebooks/2_travel_times.ipynb)
-- [Locate events](notebooks/3_localization.ipynb)
+```bash
+# For C code changes:
+make clean
+make python_CPU
 
-These notebooks require to install the following packages to be ran properly:
+# For CUDA code changes:
+make clean
+make python_GPU
 
-- `obspy>=1.3.0`  
-- `matplotlib`  
-- `tqdm`  
-- `pykonal`
+# For both:
+make clean
+make
+
+# Then reinstall to pick up changes:
+pip install --force-reinstall .
+```
 
