@@ -34,17 +34,16 @@ python_GPU: $(libdir)/beamform_gpu.so
 # -----------------------------------------------
 COPTIMFLAGS_CPU=-O3
 
-# Auto-detect CPU flags based on platform
-ifeq ($(UNAME_S),Darwin)
-    # macOS (both Intel and ARM64)
-    CFLAGS_CPU=-fopenmp=libomp -fPIC -ftree-vectorize -march=native -std=c99
-    LDFLAGS_CPU=-shared -fuse-ld=lld
-else
-    # Linux and Unix-like systems
-    CFLAGS_CPU=-fopenmp -fPIC -ftree-vectorize -march=native -std=c99
-    LDFLAGS_CPU=-shared
-endif
+CFLAGS_CPU=-fopenmp -fPIC -ftree-vectorize -march=native -std=c99
+LDFLAGS_CPU=-shared
 
+# for Mac users: if you don't want to install OpenMP via Homebrew but
+# have it in your virtual environment, uncomment the following lines:
+
+# VENV_PATHS := $(shell python -c "import sys, os; is_venv = hasattr(sys, 'real_prefix') or (hasattr(sys, 'base_prefix') and sys.base_prefix != sys.prefix); in_conda = 'CONDA_PREFIX' in os.environ; prefix = os.environ.get('CONDA_PREFIX', sys.prefix) if (is_venv or in_conda) else ''; print('-L' + prefix + '/lib -I' + prefix + '/include' if prefix else '')")
+
+# CFLAGS_CPU=-fopenmp=libomp $(VENV_PATHS) -fPIC -ftree-vectorize -march=native -std=c99
+# LDFLAGS_CPU=-shared -fuse-ld=lld
 
 # -----------------------------------------------
 #              GPU FLAGS
