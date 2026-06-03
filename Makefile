@@ -54,9 +54,10 @@ ifeq ($(UNAME_S),Darwin)
         endif
         
         ifeq ($(shell [ -d $(BREW_LIBOMP_PATH) ] && echo 1 || echo 0),1)
-            # Use brew libomp with explicit paths (GitHub Actions)
-            CFLAGS_CPU=-fopenmp -L$(BREW_LIBOMP_PATH)/lib -I$(BREW_LIBOMP_PATH)/include -fPIC -ftree-vectorize -march=native -std=c99
-            LDFLAGS_CPU=-shared
+            # Use brew libomp with explicit linking (GitHub Actions)
+            # Don't use -fopenmp flag; instead explicitly link with -lomp
+            CFLAGS_CPU=-L$(BREW_LIBOMP_PATH)/lib -I$(BREW_LIBOMP_PATH)/include -fPIC -ftree-vectorize -march=native -std=c99
+            LDFLAGS_CPU=-L$(BREW_LIBOMP_PATH)/lib -lomp -shared
         else
             # Fall back to system OpenMP
             CFLAGS_CPU=-fopenmp -fPIC -ftree-vectorize -march=native -std=c99
