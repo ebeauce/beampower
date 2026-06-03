@@ -34,16 +34,40 @@ python_GPU: $(libdir)/beamform_gpu.so
 # -----------------------------------------------
 COPTIMFLAGS_CPU=-O3
 
-CFLAGS_CPU=-fopenmp -fPIC -ftree-vectorize -march=native -std=c99
-LDFLAGS_CPU=-shared
-
-# for Mac users: if you don't want to install OpenMP via Homebrew but
-# have it in your virtual environment, uncomment the following lines:
-
-# VENV_PATHS := $(shell python -c "import sys, os; is_venv = hasattr(sys, 'real_prefix') or (hasattr(sys, 'base_prefix') and sys.base_prefix != sys.prefix); in_conda = 'CONDA_PREFIX' in os.environ; prefix = os.environ.get('CONDA_PREFIX', sys.prefix) if (is_venv or in_conda) else ''; print('-L' + prefix + '/lib -I' + prefix + '/include' if prefix else '')")
-
-# CFLAGS_CPU=-fopenmp=libomp $(VENV_PATHS) -fPIC -ftree-vectorize -march=native -std=c99
-# LDFLAGS_CPU=-shared -fuse-ld=lld
+# Auto-detect OpenMP configuration for macOS and Linux
+ifeq ($(UNAME_S),Darwin)
+    # macOS: Priority order - venv/conda (with -fopenmp=libomp) > brew libomp (with paths) > system
+    
+    # Check for venv/conda first
+    VENV_PATHS := $(shell python -c "import sys, os; is_venv = hasattr(sys, 'real_prefix') or (hasattr(sys, 'base_prefix') and sys.base_prefix != sys.prefix); in_conda = 'CONDA_PREFIX' in os.environ; prefix = os.environ.get('CONDA_PREFIX', sys.prefix) if (is_venv or in_conda) else ''; print(prefix if prefix else '')")
+    
+    ifneq ($(VENV_PATHS),)
+        # In venv/conda: use -fopenmp=libomp with venv paths
+        CFLAGS_CPU=-fopenmp=libomp -L$(VENV_PATHS)/lib -I$(VENV_PATHS)/include -fPIC -ftree-vectorize -march=native -std=c99
+        LDFLAGS_CPU=-shared -fuse-ld=lld
+    else
+        # Not in venv/conda: check for brew libomp
+        ifeq ($(UNAME_M),arm64)
+            BREW_LIBOMP_PATH := /opt/homebrew/opt/libomp
+        else
+            BREW_LIBOMP_PATH := /usr/local/opt/libomp
+        endif
+        
+        ifeq ($(shell [ -d $(BREW_LIBOMP_PATH) ] && echo 1 || echo 0),1)
+            # Use brew libomp with explicit paths (GitHub Actions)
+            CFLAGS_CPU=-fopenmp -L$(BREW_LIBOMP_PATH)/lib -I$(BREW_LIBOMP_PATH)/include -fPIC -ftree-vectorize -march=native -std=c99
+            LDFLAGS_CPU=-shared
+        else
+            # Fall back to system OpenMP
+            CFLAGS_CPU=-fopenmp -fPIC -ftree-vectorize -march=native -std=c99
+            LDFLAGS_CPU=-shared
+        endif
+    endif
+else
+    # Linux and Unix-like systems
+    CFLAGS_CPU=-fopenmp -fPIC -ftree-vectorize -march=native -std=c99
+    LDFLAGS_CPU=-shared
+endif
 
 # -----------------------------------------------
 #              GPU FLAGS
