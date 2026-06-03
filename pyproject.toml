@@ -7,7 +7,7 @@ name = "beampower"
 dynamic = ["version"]
 description = "Package for beamforming/backprojection."
 readme = "README.md"
-license = { text = "MIT" }
+license = { text = "GPL-3.0" }
 requires-python = ">=3.8"
 authors = [
     { name = "Eric Beaucé", email = "ebeauce@ldeo.columbia.edu" },
@@ -23,7 +23,11 @@ keywords = ["earthquake detection", "backprojection", "beamforming"]
 classifiers = [
     "Intended Audience :: Science/Research",
     "Topic :: Scientific/Engineering",
-    "Programming Language :: Python :: 3.6",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
     "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
 ]
 dependencies = [
@@ -41,6 +45,6 @@ include-package-data = true
 zip-safe = false
 
 [project.urls]
-GitHub = "https://github.com/beampower"
-Documentation = "https://https://ebeauce.github.io/beampower"
-Issues = "https://github.com/beampower/issues"
+GitHub = "https://github.com/ebeauce/beampower"
+Documentation = "https://ebeauce.github.io/beampower"
+Issues = "https://github.com/ebeauce/beampower/issues"
