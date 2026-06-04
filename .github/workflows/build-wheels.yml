@@ -30,6 +30,8 @@ jobs:
         CIBW_BUILD: "cp310-*"
         # Skip alternative targets like musl linux
         CIBW_SKIP: "*musllinux*"
+
+        MACOSX_DEPLOYMENT_TARGET: "15.0"
         
         # Linux configurations: Install OpenMP
         CIBW_BEFORE_ALL_LINUX: "yum install -y libgomp"
