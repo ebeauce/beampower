@@ -44,7 +44,8 @@ jobs:
     # scikit-build-core intercepts this command, invokes CMake,
     # detects no CUDA is present, and compiles the CPU OpenMP binary.
     - name: Build wheel
-      run: python -m build --wheel
+      run: python -m build --wheel \
+          -Ccmake.args="-DOpenMP_C_FLAGS=-Xpreprocessor -fopenmp;-DOpenMP_C_LIB_NAMES=omp;-DOpenMP_omp_LIBRARY=$(brew --prefix libomp)/lib/libomp.dylib;-DOpenMP_C_INCLUDE_DIR=$(brew --prefix libomp)/include"
     
     # Converts generic linux_x86_64 tag into PyPI-acceptable manylinux
     # and fixes external dynamic linkages natively.
