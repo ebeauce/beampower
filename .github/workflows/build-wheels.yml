@@ -36,11 +36,8 @@ jobs:
         
         # macOS configurations: Install and link libomp natively
         CIBW_BEFORE_ALL_MACOS: "brew install libomp"
-        CIBW_ENVIRONMENT_MACOS: >
-          OpenMP_C_FLAGS="-Xpreprocessor -fopenmp"
-          OpenMP_C_LIB_NAMES="omp"
-          OpenMP_omp_LIBRARY="/opt/homebrew/opt/libomp/lib/libomp.dylib"
-          OpenMP_C_INCLUDE_DIR="/opt/homebrew/opt/libomp/include"
+        CIBW_CONFIG_SETTINGS_MACOS: >-
+          cmake.args="-DOpenMP_C_FLAGS=-Xpreprocessor -fopenmp;-DOpenMP_C_LIB_NAMES=omp;-DOpenMP_omp_LIBRARY=/opt/homebrew/opt/libomp/lib/libomp.dylib;-DOpenMP_C_INCLUDE_DIR=/opt/homebrew/opt/libomp/include"
 
     - name: Upload wheel artifacts
       uses: actions/upload-artifact@v4
