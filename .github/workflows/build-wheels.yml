@@ -7,117 +7,78 @@ on:
   workflow_dispatch:  # Allow manual builds from GitHub UI
 
 jobs:
-  build_wheels_cpu:
-    name: Build CPU wheels on ${{ matrix.os }}
+  build_wheels:
+    name: Build wheels on ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        include:
-          - os: ubuntu-latest
-            python-version: '3.10'
-          - os: macos-latest
-            python-version: '3.10'
+        os: [ubuntu-latest, macos-latest]
 
     steps:
     - uses: actions/checkout@v4
-    
-    - name: Set up Python
-      uses: actions/setup-python@v5
-      with:
-        python-version: ${{ matrix.python-version }}
-    
-    - name: Install dependencies (Ubuntu)
+
+    # 1. Setup QEMU to handle broader architecture checks if needed
+    - name: Set up QEMU
       if: runner.os == 'Linux'
-      run: |
-        sudo apt-get update
-        sudo apt-get install -y gcc make libomp-dev
-        python -m pip install --upgrade pip
-        pip install build wheel auditwheel
-    
-    - name: Install dependencies (macOS)
-      if: runner.os == 'macOS'
-      run: |
-        brew install libomp
-        python -m pip install --upgrade pip
-        pip install build wheel
-    
-    - name: Build CPU library
-      run: |
-        make clean
-        make python_CPU
-    
-    - name: Build wheel
-      run: python -m build --wheel
-    
-    # Essential step: Repair the generic Linux wheel into a manylinux wheel
-    - name: Repair Linux Wheel (Auditwheel)
-      if: runner.os == 'Linux'
-      run: |
-        mkdir repaired_dist
-        auditwheel repair dist/*.whl --plat manylinux_2_28_x86_64 -w repaired_dist/
-        rm -rf dist/*.whl
-        mv repaired_dist/*.whl dist/
+      uses: docker/setup-qemu-action@v3
+
+    # 2. Build the exact platform wheels safely using cibuildwheel
+    - name: Build wheels
+      uses: pypa/cibuildwheel@v2.22.0
+      env:
+        # Build only for CPython 3.10 to match your environment spec
+        CIBW_BUILD: "cp310-*"
+        # Skip alternative targets like musl linux
+        CIBW_SKIP: "*musllinux*"
+
+        MACOSX_DEPLOYMENT_TARGET: "15.0"
+        
+        # Linux configurations: Install OpenMP
+        CIBW_BEFORE_ALL_LINUX: "yum install -y libgomp"
+        
+        # macOS configurations: Install and link libomp natively
+        CIBW_BEFORE_ALL_MACOS: "brew install libomp"
+        CIBW_CONFIG_SETTINGS_MACOS: >-
+          cmake.args="-DOpenMP_C_FLAGS=-Xpreprocessor -fopenmp;-DOpenMP_C_LIB_NAMES=omp;-DOpenMP_omp_LIBRARY=/opt/homebrew/opt/libomp/lib/libomp.dylib;-DOpenMP_C_INCLUDE_DIR=/opt/homebrew/opt/libomp/include;-DOpenMP_CXX_FLAGS=-Xpreprocessor -fopenmp;-DOpenMP_CXX_LIB_NAMES=omp;-DOpenMP_CXX_INCLUDE_DIR=/opt/homebrew/opt/libomp/include"
 
     - name: Upload wheel artifacts
       uses: actions/upload-artifact@v4
       with:
-        name: wheels-${{ matrix.os }}
-        path: ./dist/*.whl
-    
-    - name: Publish to PyPI
-      if: startsWith(github.ref, 'refs/tags/')
-      env:
-        TWINE_USERNAME: __token__
-        TWINE_PASSWORD: ${{ secrets.PYPI_API_TOKEN }}
-      run: |
-        pip install twine
-        twine upload dist/*.whl --skip-existing
+        name: cibw-wheels-${{ matrix.os }}
+        path: ./wheelhouse/*.whl
 
   build_wheels_gpu:
-    name: Build GPU wheels (CUDA)
+    name: Build GPU wheels (CUDA Fat Wheel)
     runs-on: ubuntu-latest
+    # We use NVIDIA's devel image because cibuildwheel can run directly on it!
     container: nvidia/cuda:11.8.0-devel-ubuntu22.04
-    
+
     steps:
     - uses: actions/checkout@v4
-    
-    - name: Install dependencies
+
+    - name: Install python and build tools inside container
       run: |
         apt-get update
-        apt-get install -y python3 python3-pip make gcc g++ git patchelf
+        apt-get install -y python3 python3-pip python3-venv git patchelf libomp-dev
         python3 -m pip install --upgrade pip build wheel auditwheel
-    
-    - name: Build GPU library
-      run: |
-        make clean
-        make python_GPU
-    
-    - name: Build wheel
+
+    # Inside this container, CMake finds CUDA automatically.
+    - name: Build Fat Wheel
       run: python3 -m build --wheel
-    
-    # Auditwheel bundles internal CUDA dependencies if they aren't marked external,
-    # and rewires the tag so PyPI accepts it.
+
+    # Convert the wheel to manylinux inside the container layout
     - name: Repair GPU Wheel (Auditwheel)
       run: |
         mkdir repaired_dist
-        auditwheel repair dist/*.whl --plat manylinux_2_28_x86_64 -w repaired_dist/
+        auditwheel repair dist/*.whl --plat manylinux_2_35_x86_64 -w repaired_dist/
         rm -rf dist/*.whl
         mv repaired_dist/*.whl dist/
-    
-    - name: Upload wheel artifacts
+
+    - name: Upload GPU wheel artifacts
       uses: actions/upload-artifact@v4
       with:
         name: wheels-gpu
         path: ./dist/*.whl
-    
-    - name: Publish to PyPI
-      if: startsWith(github.ref, 'refs/tags/')
-      env:
-        TWINE_USERNAME: __token__
-        TWINE_PASSWORD: ${{ secrets.PYPI_API_TOKEN }}
-      run: |
-        python3 -m pip install twine
-        twine upload dist/*.whl --skip-existing
 
   build_source_dist:
     name: Build source distribution
@@ -133,23 +94,39 @@ jobs:
     
     - name: Install dependencies
       run: |
-        python -m pip install --upgrade pip
-        pip install build
+        python -m pip install --upgrade pip build
     
     - name: Build source distribution
       run: python -m build --sdist
-    
+
     - name: Upload source distribution
       uses: actions/upload-artifact@v4
       with:
         name: source-dist
         path: ./dist/*.tar.gz
+
+  publish_to_pypi:
+    name: Publish verified artifacts to PyPI
+    needs: [build_wheels, build_wheels_gpu, build_source_dist]
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/')
     
-    - name: Publish source dist to PyPI
-      if: startsWith(github.ref, 'refs/tags/')
+    steps:
+    - name: Download all build artifacts
+      uses: actions/download-artifact@v4
+      with:
+        path: pypi_dist/
+        merge-multiple: true
+        
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.10'
+        
+    - name: Publish package distribution to PyPI
       env:
         TWINE_USERNAME: __token__
         TWINE_PASSWORD: ${{ secrets.PYPI_API_TOKEN }}
       run: |
-        pip install twine
-        twine upload dist/*.tar.gz --skip-existing
+        python -m pip install --upgrade pip twine
+        twine upload pypi_dist/* --skip-existing

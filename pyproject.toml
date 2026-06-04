@@ -1,6 +1,6 @@
 [build-system]
-requires = ["setuptools>=61.0", "wheel"]
-build-backend = "setuptools.build_meta"
+requires = ["scikit-build-core>=0.8.0"]
+build-backend = "scikit_build_core.build"
 
 [project]
 name = "beampower"
@@ -34,17 +34,19 @@ dependencies = [
     "numpy>=1.19.5",
 ]
 
-[tool.setuptools.packages.find]
-include = ["beampower*"]
-
-[tool.setuptools.dynamic]
-version = { attr = "beampower.__version__" }
-
-[tool.setuptools]
-include-package-data = true
-zip-safe = false
-
 [project.urls]
 GitHub = "https://github.com/ebeauce/beampower"
 Documentation = "https://ebeauce.github.io/beampower"
 Issues = "https://github.com/ebeauce/beampower/issues"
+
+[tool.scikit-build]
+# Forces a strict minimum CMake version
+cmake.version = ">=3.24"
+# Ensures your wheels get strict platform ABI tagging automatically
+wheel.py-api = "cp38" 
+# Authorize scikit-build-core to use third-party plugins
+experimental = true
+
+[tool.scikit-build.metadata.version]
+provider = "scikit_build_core.metadata.regex"
+input = "beampower/__init__.py"
