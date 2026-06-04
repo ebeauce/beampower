@@ -70,7 +70,11 @@ jobs:
     - name: Repair GPU Wheel (Auditwheel)
       run: |
         mkdir repaired_dist
-        auditwheel repair dist/*.whl --plat manylinux_2_35_x86_64 -w repaired_dist/
+        auditwheel repair dist/*.whl \
+          --plat manylinux_2_35_x86_64 \
+          -w repaired_dist/ \
+          --exclude libcudart.so \
+          --exclude libcuda.so
         rm -rf dist/*.whl
         mv repaired_dist/*.whl dist/
 
