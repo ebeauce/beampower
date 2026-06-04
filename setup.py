@@ -13,4 +13,5 @@ setup(
     packages=['beampower'],
     include_package_data=True,
     zip_safe=False,
+    distclass=BinaryDistribution,
 )
