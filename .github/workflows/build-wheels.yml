@@ -41,19 +41,16 @@ jobs:
         python -m pip install --upgrade pip
         pip install build wheel
     
-    # scikit-build-core intercepts this command, invokes CMake,
-    # detects no CUDA is present, and compiles the CPU OpenMP binary.
     - name: Build wheel (macOS with OpenMP)
       if: runner.os == 'macOS'
-      run: python -m build --wheel \
+      run: |
+        python -m build --wheel \
           -Ccmake.args="-DOpenMP_C_FLAGS=-Xpreprocessor -fopenmp;-DOpenMP_C_LIB_NAMES=omp;-DOpenMP_omp_LIBRARY=$(brew --prefix libomp)/lib/libomp.dylib;-DOpenMP_C_INCLUDE_DIR=$(brew --prefix libomp)/include"
     
     - name: Build wheel (Linux with OpenMP)
       if: runner.os == 'Linux'
       run: python -m build --wheel
 
-    # Converts generic linux_x86_64 tag into PyPI-acceptable manylinux
-    # and fixes external dynamic linkages natively.
     - name: Repair Linux Wheel (Auditwheel)
       if: runner.os == 'Linux'
       run: |
@@ -67,59 +64,41 @@ jobs:
       with:
         name: wheels-${{ matrix.os }}
         path: ./dist/*.whl
-    
-    - name: Publish to PyPI
-      if: startsWith(github.ref, 'refs/tags/')
-      env:
-        TWINE_USERNAME: __token__
-        TWINE_PASSWORD: ${{ secrets.PYPI_API_TOKEN }}
-      run: |
-        pip install twine
-        twine upload dist/*.whl --skip-existing
 
   build_wheels_gpu:
     name: Build GPU wheels (CUDA Fat Wheel)
     runs-on: ubuntu-latest
-    container: nvidia/cuda:11.8.0-devel-ubuntu22.04
+    # FIX: Use official PyPA image containing aligned older glibc configurations
+    container: quay.io/pypa/manylinux_2_28_x86_64:cuda_11.8
     
     steps:
     - uses: actions/checkout@v4
     
-    - name: Install dependencies
+    # FIX: PyPA containers bundle distinct optimized Python builds in /opt/python/.
+    # This dynamically selects CP310 (Python 3.10) path environment mappings.
+    - name: Build Fat Wheel using PyPA Toolchain
       run: |
-        apt-get update
-        apt-get install -y python3 python3-pip make gcc g++ git patchelf
-        python3 -m pip install --upgrade pip build wheel auditwheel
+        /opt/python/cp310-cp310/bin/pip install --upgrade pip build wheel auditwheel
+        /opt/python/cp310-cp310/bin/python -m build --wheel
     
-    # inside this container, CMake finds CUDA automatically.
-    # It will generate BOTH beamform_cpu.so and beamform_gpu.so 
-    # and wrap them together in a unified "Fat Wheel".
-    - name: Build Fat Wheel
-      run: python3 -m build --wheel
-    
-    # Auditwheel bundles internal CUDA dependencies if needed 
-    # and safely changes the platform tag to manylinux
     - name: Repair GPU Wheel (Auditwheel)
       run: |
         mkdir repaired_dist
-        auditwheel repair dist/*.whl --plat manylinux_2_28_x86_64 -w repaired_dist/
+        /opt/python/cp310-cp310/bin/auditwheel repair dist/*.whl --plat manylinux_2_28_x86_64 -w repaired_dist/
         rm -rf dist/*.whl
         mv repaired_dist/*.whl dist/
+    
+    # Isolate dist file staging area to prevent parallel pollution
+    - name: Staging GPU artifacts
+      run: |
+        mkdir gpu_dist
+        mv dist/*.whl gpu_dist/
     
     - name: Upload wheel artifacts
       uses: actions/upload-artifact@v4
       with:
         name: wheels-gpu
-        path: ./dist/*.whl
-    
-    - name: Publish to PyPI
-      if: startsWith(github.ref, 'refs/tags/')
-      env:
-        TWINE_USERNAME: __token__
-        TWINE_PASSWORD: ${{ secrets.PYPI_API_TOKEN }}
-      run: |
-        python3 -m pip install twine
-        twine upload dist/*.whl --skip-existing
+        path: ./gpu_dist/*.whl
 
   build_source_dist:
     name: Build source distribution
@@ -146,12 +125,29 @@ jobs:
       with:
         name: source-dist
         path: ./dist/*.tar.gz
+
+  publish_to_pypi:
+    name: Publish verified artifacts to PyPI
+    needs: [build_wheels_cpu, build_wheels_gpu, build_source_dist]
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/')
     
-    - name: Publish source dist to PyPI
-      if: startsWith(github.ref, 'refs/tags/')
+    steps:
+    - name: Download all build artifacts
+      uses: actions/download-artifact@v4
+      with:
+        path: pypi_dist/
+        merge-multiple: true  # Flattens all separate job outputs into one folder
+        
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.10'
+        
+    - name: Publish package distribution to PyPI
       env:
         TWINE_USERNAME: __token__
         TWINE_PASSWORD: ${{ secrets.PYPI_API_TOKEN }}
       run: |
-        pip install twine
-        twine upload dist/*.tar.gz --skip-existing
+        python -m pip install --upgrade pip twine
+        twine upload pypi_dist/* --skip-existing
