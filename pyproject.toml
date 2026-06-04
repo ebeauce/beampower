@@ -1,5 +1,5 @@
 [build-system]
-requires = ["scikit-build-core>=0.8.0"]
+requires = ["scikit-build-core>=0.8.0", "setuptools_scm>=8.0"]
 build-backend = "scikit_build_core.build"
 
 [project]
@@ -41,12 +41,14 @@ Issues = "https://github.com/ebeauce/beampower/issues"
 
 [tool.scikit-build]
 # Forces a strict minimum CMake version
-cmake.minimum-version = "3.24"
-# Automatically reads your package version from your __init__.py __version__ property
-metadata.version.provider = "scikit_build_core.metadata.setuptools_scm"
+cmake.version = ">=3.24"
 # Ensures your wheels get strict platform ABI tagging automatically
 wheel.py-api = "cp38" 
+# Authorize scikit-build-core to use third-party plugins
+experimental = true
 
 [tool.scikit-build.metadata.version]
+# Automatically reads your package version from your __init__.py __version__ property
+provider = "scikit_build_core.metadata.setuptools_scm"
 # Points scikit-build to where your package source lives to extract the version string
 provider-path = "beampower"
