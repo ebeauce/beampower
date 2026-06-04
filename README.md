@@ -14,9 +14,6 @@
 `beampower` is a package for beamforming (or backprojection) of seismic signal for event detection and location. The Python wrapper
 can call the C (CPU) or CUDA-C (GPU) implementation. See the documentation at [https://ebeauce.github.io/beampower/](https://ebeauce.github.io/beampower/).
 
-### How to cite this package
-
-There is no publication (yet) for this repository, but if you use it, please acknowledge it in your manuscript's _Data and Resources_ or _Acknowledgements_ section.
 
 ## Installation
 
@@ -26,7 +23,7 @@ The simplest way to use BeamPower:
 pip install beampower
 ```
 
-That's it! No compilation needed. GPU support is included if available.
+GPU support is included if available.
 
 ## Learn More
 
@@ -72,3 +69,9 @@ make
 pip install --force-reinstall .
 ```
 
+
+## Reference
+Please, if you use this package for your research, cite:
+
+Beaucé, Eric and Frank, William B. and Seydoux, Léonard and Poli, Piero and Groebner, Nathan
+and van der Hilst, Robert D. and Campillo, Michel (2023). BPMF: A Backprojection and Matched‐Filtering Workflow for Automated Earthquake Detection and Location. *Seismological Research Letters*. DOI: [https://doi.org/10.1785/0220230230](https://doi.org/10.1785/0220230230).
