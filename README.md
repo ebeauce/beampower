@@ -41,34 +41,26 @@ GPU support is included if available.
 ```bash
 git clone https://github.com/ebeauce/beampower.git
 cd beampower
-
-# Build the libraries FIRST (required for local development)
-make clean
-make  # builds both CPU and GPU libraries
-
-# Then install
+# option 1:
 pip install .
+# option 2 (check name of wheel in dist/):
+python -m build
+pip install dist/beampower-XXXX.whl 
 ```
 
 **If you modify C or CUDA code:**
 
 ```bash
-# For C code changes:
-make clean
-make python_CPU
-
-# For CUDA code changes:
-make clean
-make python_GPU
-
-# For both:
-make clean
-make
-
+# option 1:
+pip install . --no-cache-dir --force-reinstall
+# option 2:
+# Clean up previous Python and CMake build artifacts
+rm -rf build/ dist/
+# Re-run the build from scratch
+python -m build
 # Then reinstall to pick up changes:
-pip install --force-reinstall .
+pip install --force-reinstall dist/beampower-XXXX.whl
 ```
-
 
 ## Reference
 Please, if you use this package for your research, cite:
