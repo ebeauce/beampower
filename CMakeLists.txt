@@ -44,7 +44,7 @@ install(TARGETS beamform_cpu DESTINATION beampower/lib)
 if(HAS_GPU)
     python_add_library(beamform_gpu MODULE beampower/src/beamform.cu)
     
-    # Mirroring your old architectural flags (-gencode arch=compute_...)
+    # Mirroring architectural flags (-gencode arch=compute_...)
     set_target_properties(beamform_gpu PROPERTIES
         CUDA_ARCHITECTURES "70;75;80"
     )
