@@ -46,7 +46,7 @@ if(HAS_GPU)
     
     # Mirroring architectural flags (-gencode arch=compute_...)
     set_target_properties(beamform_gpu PROPERTIES
-        CUDA_ARCHITECTURES "70;75;80"
+        CUDA_ARCHITECTURES "75;80"
     )
     
     # Pass host flags safely via CMake's specialized wrapper syntax

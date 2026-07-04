@@ -107,6 +107,12 @@ void __global__ _beam(
             ){
         // start shift and stack
         for (size_t s=0; s<n_stations; s++){
+
+            // the following is necessary because time_delays_minmax was not
+            // computed for stations with weight=0, therefore not skipping stations
+            // with weight=0 here could lead to illegal memory accessses
+            if (weights_s[s] == 0.f) continue;
+
             for (size_t p=0; p<n_phases; p++){
                 feature_offset = s * n_samples * n_phases + p\
                                 + n_phases * time_delays_s[s * n_phases + p]\
